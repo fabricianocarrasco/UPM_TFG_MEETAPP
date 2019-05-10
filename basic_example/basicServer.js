@@ -6,6 +6,22 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const errorhandler = require('errorhandler');
 const morgan = require('morgan');
+//Añadido para crear el Hash en el login/sign up ( tras muchos intentos no se puede usar bcrypt)
+//const bcrypt = require('bcrypt');
+//const saltRounds = 10;
+//Añadido por mi para el login
+var mysql = require('mysql');
+var session = require('express-session');
+//var cookie = require('cookie-session');
+var path = require('path');
+
+var connection = mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'licodearaceli',
+    database:'mydb'
+});
+
 // eslint-disable-next-line import/no-unresolved
 const N = require('./nuve');
 const fs = require('fs');
@@ -34,7 +50,20 @@ app.use(errorhandler({
 }));
 app.use(morgan('dev'));
 app.use(express.static(`${__dirname}/public`));
+//app.use(express.static(`${__dirname}/public/js`));
 
+//Para la identificación del usuario
+/*app.use(cookieSession({
+  name: 'cookieSession',
+  keys: [],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));*/
+//Para el login
+app.use(session({
+    secret:'licode',
+    resave:true,
+    saveUninitialazed:true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true,
@@ -88,40 +117,29 @@ const getOrCreateRoom = (name, type = 'erizo', mediaConfiguration = 'default',
   });
 };
 
-/*
-function deleteEmptyRooms(){
-  N.API.getRooms((roomlist) => {
-    const rooms = JSON.parse(roomlist);
-    rooms.forEach((room) => {
-      N.API.getUsers(room._id, (userlist) => {
-        const users = JSON.parse(userlist);
-        if (Object.keys(users).length === 0) {
-          N.API.deleteRoom(room._id);
-        }
-      });
-    });
-  });
-}
-*/
-
+//Con el array de las salas theRooms va comprobando las salas 1 a 1, saca el id de la sala y saca esa sala del array,
+//y cuando comprueba la sala vuelve a llamarse a si mismo con el array sin esa sala como parámetro.
 const deleteRoomsIfEmpty = (theRooms, callback) => {
   console.log('entrando en deleteRoomsIfEmpty');
   if (theRooms.length === 0) {
     callback(true);
     return;
   }
-  const theRoomId = theRooms.pop()._id;
-  N.API.getUsers(theRoomId, (userlist) => {
+  //const theRoomId = theRooms.pop()._id;
+  //Saca la sala del array
+  const theRoomId = theRooms.pop();
+  N.API.getUsers(theRoomId._id, (userlist) => {
     const users = JSON.parse(userlist);
     if (Object.keys(users).length === 0) {
-      N.API.deleteRoom(theRoomId, () => {
+      N.API.deleteRoom(theRoomId._id, () => {
         deleteRoomsIfEmpty(theRooms, callback);
+        console.log("Sala " + theRoomId.name + " borrada");
       });
     } else {
       deleteRoomsIfEmpty(theRooms, callback);
     }
   }, (error, status) => {
-    console.log('Error getting user list for room ', theRoomId, 'reason: ', error);
+    console.log('Error getting user list for room ', theRoomId._id, 'reason: ', error);
     switch (status) {
       case 404:
         deleteRoomsIfEmpty(theRooms, callback);
@@ -161,27 +179,60 @@ app.get('/getRooms/', (req, res) => {
     res.send(rooms);
   });
 });
-/*
-app.get('/testRoom/:name', (req, res) => {
-  N.API.getRooms((rooms) => {
-    const salas = JSON.parse(rooms);
-    salas.forEach((room)=>{
-      if (room.name === req.params.name){
-        res.send(true);
-        return;
+//Código de la pagina de login
+app.get('/',(req,res)=>{
+   res.sendFile(path.join(__dirname + '/public/login.html'));
+});
+app.post('/auth',(req,res)=>{
+
+  let email = req.body.inputEmail;
+  let password = req.body.inputPassword;
+
+  if (email && password){
+    connection.query("SELECT * FROM users WHERE email = ? and password = ?",[email,password],(error,result,fields)=>{
+      if(error) throw error;
+      if (result && result.length > 0) {
+        req.session.loggedin = true;
+        var tem = email.split('@');
+        req.session.username = tem[0];
+        res.redirect('/home?user='+ tem[0]);
+      } else {
+        res.send('Incorrect Username and/or Password!');
       }
+      res.end();
     });
-    res.send(false);
-  });
+  } else {
+    res.send('Please enter Username and Password!');
+    res.end();
+  }
+
 });
-*/
-/*
-app.get('/testRoom/:name', (req, res) => {
-  N.API.getRooms((rooms) => {
-    res.send(rooms);
-  });
+app.get('/home',(req,res)=>{
+  res.sendFile(path.join(__dirname + '/public/home.html'));
 });
-*/
+
+app.post('/createRoom',(req,res)=>{
+  res.redirect('/room?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
+  res.end();
+});
+app.post('/joinRoom',(req,res)=>{
+  res.redirect('/room?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
+  res.end();
+});
+app.get('/room', (req,res)=>{
+    res.sendFile(path.join(__dirname + '/public/room.html'));
+});
+app.post('/createWebinar',(req,res)=>{
+  res.redirect('/webinar?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
+  res.end();
+});
+app.post('/joinWebinar',(req,res)=>{
+  res.redirect('/webinar?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
+  res.end();
+});
+app.get('/webinar', (req,res)=>{
+  res.sendFile(path.join(__dirname + '/public/webinar.html'));
+});
 app.get('/getUsers/:room', (req, res) => {
   const room = req.params.room;
   N.API.getUsers(room, (users) => {
@@ -243,4 +294,8 @@ cleanExampleRooms(() => {
     console.log('BasicExample started');
     server.listen(3004);
   });
+
+  setInterval(function(){
+    cleanExampleRooms(()=>{console.log("Salas borradas")});
+  },3000);
 });

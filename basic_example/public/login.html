@@ -5,11 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href="floating-labels.css" rel="stylesheet">
+    <link href="styles/floating-labels.css" rel="stylesheet">
     <title>Login MeetApp</title>
 </head>
 <body >
-<form class="form-signin">
+<form action="auth" method="post" class="form-signin">
     <div class="text-center mb-4">
         <img class="mb-4" src="http://www.etsit.upm.es/fileadmin/documentos/laescuela/la_escuela/galerias_fotograficas/Servicios/generales/logos/ESCUDO_PROFESION/ESCUDO_PROFESION.png" alt="" width="120" height="120">
         <h1 class="h1 mb-3 font-weight-normal">MeetApp</h1>
@@ -17,12 +17,12 @@
     </div>
 
     <div class="form-label-group">
-        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <input type="email" name='inputEmail' id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
         <label for="inputEmail">Email address</label>
     </div>
 
     <div class="form-label-group">
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <input type="password" name='inputPassword' id="inputPassword" class="form-control" placeholder="Password" required="">
         <label for="inputPassword">Password</label>
     </div>
 

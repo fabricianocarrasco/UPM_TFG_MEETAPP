@@ -135,8 +135,10 @@ function createRoom(roomName){
 
   //si se le ha puesto nombre a la sala comienza la retrasmision
   if(roomName !== ""){
-    //crea una sala con el nombre de la sala, en un futuro username será el correo
-    const roomData = { username: 'user',
+      const urlString = window.location.href;
+      const url = new URL(urlString);
+      //crea una sala con el nombre de la sala, en un futuro username será el correo
+    const roomData = { username: url.searchParams.get('user'),
     role: 'presenter',
     room: roomName,
     type: 'erizo'
@@ -261,7 +263,10 @@ function joinRoom(roomName){
     //si se le ha puesto nombre a la sala comienza la retrasmision
     if(roomName !== ""){
         //crea una sala con el nombre de la sala, en un futuro username será el correo
-        const roomData = { username: 'user',
+        const urlString = window.location.href;
+        const url = new URL(urlString);
+
+        const roomData = { username: url.searchParams.get('user'),
             role: 'presenter',
             room: roomName,
             type: 'erizo'
@@ -410,7 +415,7 @@ window.onload = () => {
   }else if(status === 'join'){
     joinRoom(roomName);
   }else{
-    window.location = '/prueba.html'
+    window.location = '/home.html'
   }
 
 };

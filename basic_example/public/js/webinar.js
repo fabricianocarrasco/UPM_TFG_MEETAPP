@@ -403,7 +403,7 @@ window.onload = () => {
     }else if(status === 'join'){
         joinWebinar(webinarName);
     }else{
-        window.location = '/prueba.html'
+        window.location = '/home.html'
     }
 
 };

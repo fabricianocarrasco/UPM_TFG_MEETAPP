@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>Webinar</title>
-    <link rel="stylesheet" href="chat.css">
-    <script type="text/javascript" src="erizo.js"></script>
-    <script type="text/javascript" src="webinar.js"></script>
+    <link rel="stylesheet" href="styles/chat.css">
+    <script type="text/javascript" src="js/erizo.js"></script>
+    <script type="text/javascript" src="js/webinar.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
@@ -17,39 +17,36 @@
 
   <body>
     <div class="container-fluid h-100">
-      <h1 id='webinarName'> </h1>
-      <!--label for="inputChat">Chat</--label><input id="inputChat" type='text'-->
-      <!--button id='sendButton' onclick="sendMessage()">Send</button-->
-      <!--div id="chatMessages"></div-->
-      <div id="videoContainer"></div>
-      <!-- Chat -->
-      <div class="row justify-content-center h-100">
-        <div class="col-md-8 col-xl-6 chat">
-          <div class="card">
-            <div class="card-header msg_head">
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img src="http://www.etsit.upm.es/fileadmin/documentos/laescuela/la_escuela/galerias_fotograficas/Servicios/generales/logos/ESCUDO_PROFESION/ESCUDO_PROFESION.png" class="rounded-circle user_img" alt="">
-                  <span class="online_icon"></span>
-                </div>
-                <div class="user_info">
-                  <span>Chat de X</span>
-                  <p>X participantes</p>
+      <div class="flex-row h-100">
+        <div class="justify-content-around left_side h-100">
+          <h1  id='webinarName'> </h1>
+          <div class="chat">
+            <div class="card">
+              <div class="card-header msg_head">
+                <div class="d-flex bd-highlight">
+                  <div class="img_cont">
+                    <img src="http://www.etsit.upm.es/fileadmin/documentos/laescuela/la_escuela/galerias_fotograficas/Servicios/generales/logos/ESCUDO_PROFESION/ESCUDO_PROFESION.png" class="rounded-circle user_img" alt="">
+                  </div>
+                  <div class="user_info">
+                    <span>Chat de X</span>
+                    <p>X participantes</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div id="chatMessages" class="card-body msg_card_body">
-            </div>
-            <div class="card-footer">
-              <div class="input-group">
-                <textarea id="inputChat" name="" class="form-control type_msg" placeholder="Type your message..."></textarea>
-                <div class="input-group-append">
-                  <span onclick="sendMessage()" class="input-group-text send_btn" ><i class="fas fa-location-arrow"></i></span>
+              <div id="chatMessages" class="card-body msg_card_body">
+              </div>
+              <div class="card-footer">
+                <div class="input-group">
+                  <textarea id="inputChat" name="" class="form-control type_msg" placeholder="Type your message..."></textarea>
+                  <div class="input-group-append">
+                    <span onclick="sendMessage()" class="input-group-text send_btn" ><i class="fas fa-location-arrow"></i></span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="" id="videoContainer"></div>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
