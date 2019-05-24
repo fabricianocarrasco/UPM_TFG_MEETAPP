@@ -10,8 +10,10 @@ const morgan = require('morgan');
 //const bcrypt = require('bcrypt');
 //const saltRounds = 10;
 //Añadido por mi para el login
-var mysql = require('mysql');
-var session = require('express-session');
+const mysql = require('mysql');
+const session = require('express-session');
+const crypto = require('crypto');
+
 //var cookie = require('cookie-session');
 var path = require('path');
 
@@ -187,9 +189,10 @@ app.post('/auth',(req,res)=>{
 
   let email = req.body.inputEmail;
   let password = req.body.inputPassword;
-
+  const hash = crypto.createHash('sha256');
+  hash.update(password);
   if (email && password){
-    connection.query("SELECT * FROM users WHERE email = ? and password = ?",[email,password],(error,result,fields)=>{
+    connection.query("SELECT * FROM users WHERE email = ? and password = ?",[email,hash.digest('hex')],(error,result,fields)=>{
       if(error) throw error;
       if (result && result.length > 0) {
         req.session.loggedin = true;
@@ -212,27 +215,45 @@ app.get('/home',(req,res)=>{
 });
 
 app.post('/createRoom',(req,res)=>{
-  res.redirect('/room?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
-  res.end();
+  if(req.session.loggedin && req.session.username !== undefined){
+    res.redirect('/room?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
+    res.end();
+  }else{
+    res.redirect("/");
+  }
+
 });
 app.post('/joinRoom',(req,res)=>{
-  res.redirect('/room?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
-  res.end();
+  if(req.session.loggedin && req.session.username !== undefined){
+    res.redirect('/room?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
+    res.end();
+  }else{
+    res.redirect("/");
+  }
 });
 app.get('/room', (req,res)=>{
     res.sendFile(path.join(__dirname + '/public/room.html'));
 });
 app.post('/createWebinar',(req,res)=>{
-  res.redirect('/webinar?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
-  res.end();
+  if(req.session.loggedin && req.session.username !== undefined){
+    res.redirect('/webinar?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
+    res.end();
+  }else{
+    res.redirect("/");
+  }
 });
 app.post('/joinWebinar',(req,res)=>{
-  res.redirect('/webinar?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
-  res.end();
+  if(req.session.loggedin && req.session.username !== undefined){
+    res.redirect('/webinar?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
+    res.end();
+  }else{
+    res.redirect("/");
+  }
 });
 app.get('/webinar', (req,res)=>{
   res.sendFile(path.join(__dirname + '/public/webinar.html'));
 });
+
 app.get('/getUsers/:room', (req, res) => {
   const room = req.params.room;
   N.API.getUsers(room, (users) => {

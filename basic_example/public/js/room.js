@@ -154,7 +154,7 @@ function createRoom(roomName){
       room.addEventListener('room-connected',function(event){
         console.log('conectado');
         //el nombre del stream debe coincidir con el nombre del usuario
-        localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:'mystream'}});
+        localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:url.searchParams.get('user')}});
         //se inicia el stream
         localStream.init();
         //si se acepta la cámara se inicia la reproduccion de video
@@ -282,7 +282,7 @@ function joinRoom(roomName){
             room.addEventListener('room-connected',function(event){
                 console.log('Join: room connected');
                 //el nombre del stream debe coincidir con el nombre del usuario
-                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:'mystream'}});
+                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:url.searchParams.get('user')}});
                 //se inicia el stream
                 localStream.init();
                 //si se acepta la cámara se inicia la reproduccion de video

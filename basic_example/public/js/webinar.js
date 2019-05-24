@@ -61,7 +61,7 @@ const getUsers = (callback,roomID) => {
 
     req.open('GET', url, true);
     req.send();
-}
+};
 
 //se suscribe al stream y al evento de datos para el chat de texto
 const subscribeToStream = (stream, localStream, room) => {
@@ -97,20 +97,52 @@ function usersInRoom(){
         //realiza un bucle forEach en el array de salas para buscar la que nos interesa
         rooms.forEach(function(room){
             //compara el nombre de las salas con el escrito en el cuadro de texto para ver si coinciden
-            if(room.name === document.getElementById('webinarName').value){
+            if(room.name === document.getElementById('webinarName').innerText){
                 //si coinciden los nombres saca el id de esa sala
                 const token = room._id;
                 console.log(token);
                 //con el id de la sala pide el servidor que envie los datos de los usuarios
                 getUsers((response)=>{
                     //imprime por consola la información recibida
-                    console.log(response);
+                    console.log(JSON.parse(response));
                 },token);
             }
         });
     });
 
 
+}
+
+function nUsersInRoom(){
+    let nUsers = 0;
+    getRooms((response) => {
+        //convierte el JSON en un array de objetos para poder buscar
+        const rooms = JSON.parse(response);
+        //realiza un bucle forEach en el array de salas para buscar la que nos interesa
+        rooms.forEach(function(room){
+            //compara el nombre de las salas con el escrito en el cuadro de texto para ver si coinciden
+            if(room.name === document.getElementById('webinarName').innerText){
+                //si coinciden los nombres saca el id de esa sala
+                const token = room._id;
+                console.log(token);
+                //con el id de la sala pide el servidor que envie los datos de los usuarios
+                getUsers((response)=>{
+                    //muestra el numero de usuarios en el chat de texto
+                    nUsers = JSON.parse(response).length;
+
+                    if (nUsers === 1) {
+                        document.getElementById("nUsers").innerText = nUsers +" user";
+                    }else{
+                        document.getElementById("nUsers").innerText = nUsers +" users";
+                    }
+
+                },token);
+            }
+        });
+
+    });
+
+    //return nUsers;
 }
 
 function createWebinar(webinarName){
@@ -127,7 +159,11 @@ function createWebinar(webinarName){
     //si se le ha puesto nombre a la sala comienza la retrasmision
     if(webinarName !== ""){
         //crea una sala con el nombre de la sala, en un futuro username será el correo
-        const roomData = { username: 'user',
+        const urlString = window.location.href;
+        const url = new URL(urlString);
+
+
+        const roomData = { username: url.searchParams.get('user'),
             role: 'presenter',
             room: webinarName,
             type: 'erizo'
@@ -143,9 +179,12 @@ function createWebinar(webinarName){
             room.addEventListener('room-connected',function(event){
                 console.log('conectado');
                 //el nombre del stream debe coincidir con el nombre del usuario
-                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:'mystream'}});
+                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name: url.searchParams.get('user')}});
                 //se inicia el stream
                 localStream.init();
+                //muestra el numero de usuarios en el chat
+                nUsersInRoom();
+
                 //si se acepta la cámara se inicia la reproduccion de video
                 localStream.addEventListener('access-accepted', function(event){
                     //se configura el container para almacenar los stream
@@ -157,11 +196,15 @@ function createWebinar(webinarName){
                         if(localStream.getID() === addedEvent.stream.getID()){
 
                             console.log('Create: own stream added +--------------+');
+                            nUsersInRoom();
 
                         }else  {
 
                             console.log(`Create: ${addedEvent.stream.getID()} stream added +--------------------+`);
                             subscribeToStream(addedEvent.stream,localStream,room);
+
+                            nUsersInRoom();
+
                         }
 
                     });
@@ -175,6 +218,9 @@ function createWebinar(webinarName){
                             document.getElementById('videoContainer').removeChild(element);
 
                             console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
+
+                            nUsersInRoom();
+
                         }
                     });
                     //cuando se produce el evento de suscripción a un stream se activa
@@ -192,7 +238,7 @@ function createWebinar(webinarName){
                             div.appendChild(div2);
                             const div3 = document.createElement('div');
                             div3.setAttribute('class','msg_container');
-                            div3.innerHTML = event.msg.text;
+                            div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
                             const span = document.createElement('span');
                             span.setAttribute('class','msg_time');
                             span.innerText= `${event.msg.timestamp}`;
@@ -202,6 +248,7 @@ function createWebinar(webinarName){
                             document.getElementById('chatMessages').appendChild(div);
                             lastMessage = div.id;
 
+                            console.log("Data from: " + event.stream.getAttributes().name);
                         });
 
                     });
@@ -248,8 +295,11 @@ function joinWebinar(webinarName){
     //si se le ha puesto nombre a la sala comienza la retrasmision
     if(webinarName !== ""){
         //crea una sala con el nombre de la sala, en un futuro username será el correo
-        const roomData = { username: 'user',
-            role: 'presenter',
+        const urlString = window.location.href;
+        const url = new URL(urlString);
+
+        const roomData = { username: url.searchParams.get('user'),
+            role: 'viewerWithData',
             room: webinarName,
             type: 'erizo'
         };
@@ -264,11 +314,14 @@ function joinWebinar(webinarName){
             room.addEventListener('room-connected',function(event){
                 console.log('conectado');
                 //el nombre del stream debe coincidir con el nombre del usuario
-                localStream = Erizo.Stream({video:false, audio:false, data:true, attributes:{name:'mystream'}});
+                localStream = Erizo.Stream({video:false, audio:false, data:true, attributes:{name: url.searchParams.get('user')}});
                 //se inicia el stream
                 localStream.init();
                 //se publica el stream en la sala
                 room.publish(localStream);
+                //busca en número de usuarios que hay en la sala y lo muestra en el chat
+                nUsersInRoom();
+
                 //se configura el container para almacenar los stream
                 document.getElementById('videoContainer').setAttribute('style', 'width: 320px; height: 240px; float:center');
                 room.remoteStreams.forEach((stream)=> {
@@ -281,10 +334,15 @@ function joinWebinar(webinarName){
 
                         console.log('Join: own stream added +--------------+');
 
+                        nUsersInRoom();
+
                     }else  {
 
                         console.log(`Join: ${addedEvent.stream.getID()} stream added +--------------------+`);
                         subscribeToStream(addedEvent.stream,localStream,room);
+
+                        nUsersInRoom();
+
                     }
 
                 });
@@ -298,6 +356,8 @@ function joinWebinar(webinarName){
                         document.getElementById('videoContainer').removeChild(element);
 
                         console.log(`Join: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
+
+                        nUsersInRoom();
                     }
                 });
                 //cuando se produce el evento de suscripción a un stream se activa
@@ -324,7 +384,7 @@ function joinWebinar(webinarName){
                         div.appendChild(div2);
                         const div3 = document.createElement('div');
                         div3.setAttribute('class','msg_container');
-                        div3.innerHTML = event.msg.text;
+                        div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
                         const span = document.createElement('span');
                         span.setAttribute('class','msg_time');
                         span.innerText= `${event.msg.timestamp}`;
@@ -334,6 +394,7 @@ function joinWebinar(webinarName){
                         document.getElementById('chatMessages').appendChild(div);
                         lastMessage = div.id;
 
+                        console.log("Data from: " + event.stream.getAttributes().name);
                     });
 
                 });
@@ -362,7 +423,7 @@ function sendMessage(){
         div.setAttribute('class', "d-flex justify-content-end mb-4");
         const div3 = document.createElement('div');
         div3.setAttribute('class','msg_container_send');
-        div3.innerHTML = document.getElementById('inputChat').value;
+        div3.innerHTML = safe_tags_replace(document.getElementById('inputChat').value);
         const span = document.createElement('span');
         span.setAttribute('class','msg_time_send');
         span.innerText= `${date}`;
@@ -389,6 +450,19 @@ function sendMessage(){
         document.getElementById('inputChat').value ="";
     }
 }
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+}
 
 window.onload = () => {
     const urlString = window.location.href;
@@ -396,7 +470,7 @@ window.onload = () => {
     const webinarName = url.searchParams.get('room');
     const status = url.searchParams.get('status');
 
-    document.getElementById('webinarName').innerHTML = webinarName;
+    document.getElementById('webinarName').innerHTML = safe_tags_replace(webinarName);
 
     if(status === 'create'){
         createWebinar(webinarName);

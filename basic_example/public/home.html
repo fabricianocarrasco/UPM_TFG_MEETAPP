@@ -1,32 +1,81 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles/home.css">
     <title>Prueba creación sala</title>
     <script type="text/javascript" src="js/erizo.js"></script>
     <script type="text/javascript" src="js/home.js"></script>
-  </head>
+</head>
 
-  <body>
-    <div class="container">
-      <h1 id='aplicationTitle'> MeetApp </h1>
-      <h2 id="username"></h2>
-      <form method="post" >
-        <input required="" name="roomName" type='text'>
-        <button id="createRoomButton" type="submit" formaction="createRoom">Create Room</button>
-        <button id="joinRoomButton" type="submit"  formaction="joinRoom">Join Room</button>
-        <button id="createWebinarButton" type="submit" formaction="createWebinar" >Create Webinar</button>
-        <button id="joinWebinarButton" type="submit" formaction="joinWebinar">Join Webinar</button>
-      </form>
+<body>
+<div class="container-fluid mh-100 mw-100">
+    <div class="row head">
 
-
-      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     </div>
-  </body>
+    <div class = "row">
+        <div class="col">
+        </div>
+        <div class="col-8 text-center">
+            <h1 class="text-center"  id='aplicationTitle'> MeetApp </h1>
+            <h2 class="text-center" id="username"></h2>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+
+        </div>
+        <div id="homeForm" class="col-8 room-selected h-200">
+            <form  class = "text-center " method="post" >
+                <div class="row">
+                    <input required="" autofocus  autocomplete="off" class="col name-input" name="roomName" id="roomName" type='text'>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button id="createRoomButton" class="btn btn-link button-link" type="submit" formaction="createRoom">Create Room</button>
+                    </div>
+                    <div class="col">
+                        <button id="joinRoomButton" class="btn btn-link button-link" type="submit" formaction="joinRoom">Join Room</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button id="createWebinarButton" class="btn btn-link button-link" type="submit" formaction="createWebinar" hidden disabled >Create Webinar</button>
+                    </div>
+                    <div class="col">
+                        <button id="joinWebinarButton" class="btn btn-link button-link" type="submit" formaction="joinWebinar" hidden disabled>Join Webinar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+
+        </div>
+        <div class="col-8">
+            <div class="row">
+                <button id="selectRoomButton"  class="col btn btn-primary button-select" onClick="selectRoom()" >Room</button>
+
+                <button id="selectWebinarButton" class="col btn btn-secondary button-select" onClick="selectWebinar()">Webinar</button>
+            </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</body>
 </html>
