@@ -158,7 +158,7 @@ function createWebinar(webinarName){
 
     //si se le ha puesto nombre a la sala comienza la retrasmision
     if(webinarName !== ""){
-        //crea una sala con el nombre de la sala, en un futuro username será el correo
+        //crea una sala con el nombre de la sala
         const urlString = window.location.href;
         const url = new URL(urlString);
 
@@ -177,18 +177,17 @@ function createWebinar(webinarName){
             //conexión a la sala
             room.connect();
             room.addEventListener('room-connected',function(event){
-                console.log('conectado');
+                console.log('Create: webinar connected +----------------------------+');
                 //el nombre del stream debe coincidir con el nombre del usuario
-                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name: url.searchParams.get('user')}});
+                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 1920, 1080], attributes:{name: url.searchParams.get('user')}});
                 //se inicia el stream
                 localStream.init();
                 //muestra el numero de usuarios en el chat
                 nUsersInRoom();
-
                 //si se acepta la cámara se inicia la reproduccion de video
                 localStream.addEventListener('access-accepted', function(event){
                     //se configura el container para almacenar los stream
-                    document.getElementById('videoContainer').setAttribute('style', 'width: 320px; height: 240px; float:center');
+                    document.getElementById('videoContainer').setAttribute('style', 'width: 100%; height: 100%; ');
                     //se publica el video en la sala
                     room.publish(localStream);
                     room.addEventListener('stream-added', function(addedEvent){
@@ -226,7 +225,7 @@ function createWebinar(webinarName){
                     //cuando se produce el evento de suscripción a un stream se activa
                     room.addEventListener('stream-subscribed', function(subscribedEvent){
 
-                        console.log(`Join: subscribed to ${subscribedEvent.stream.getID()}`);
+                        console.log(`Create: subscribed to ${subscribedEvent.stream.getID()}`);
                         //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
                         subscribedEvent.stream.addEventListener('stream-data', function(event){
                             //Creamos un elemento div para que se muestre el texto del chat
@@ -247,6 +246,7 @@ function createWebinar(webinarName){
 
                             document.getElementById('chatMessages').appendChild(div);
                             lastMessage = div.id;
+                            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
                             console.log("Data from: " + event.stream.getAttributes().name);
                         });
@@ -266,6 +266,7 @@ function createWebinar(webinarName){
 
                 });
                 //en caso de no aceptar no se hace nada
+                console.log("Create: video not accepted +----------------------+");
                 localStream.addEventListener('access-denied', function(event){
                     console.log('Create: video no aceptado +------------+')
                 });
@@ -312,7 +313,7 @@ function joinWebinar(webinarName){
             //conexión a la sala
             room.connect();
             room.addEventListener('room-connected',function(event){
-                console.log('conectado');
+                console.log('Join: webinar connected +----------------------+');
                 //el nombre del stream debe coincidir con el nombre del usuario
                 localStream = Erizo.Stream({video:false, audio:false, data:true, attributes:{name: url.searchParams.get('user')}});
                 //se inicia el stream
@@ -323,11 +324,12 @@ function joinWebinar(webinarName){
                 nUsersInRoom();
 
                 //se configura el container para almacenar los stream
-                document.getElementById('videoContainer').setAttribute('style', 'width: 320px; height: 240px; float:center');
+                document.getElementById('videoContainer');
                 room.remoteStreams.forEach((stream)=> {
                     //se suscribe a todos los streams que estan en la sala
                     subscribeToStream(stream, localStream, room);
                 });
+
                 room.addEventListener('stream-added', function(addedEvent){
 
                     if(localStream.getID() === addedEvent.stream.getID()){
@@ -393,6 +395,7 @@ function joinWebinar(webinarName){
 
                         document.getElementById('chatMessages').appendChild(div);
                         lastMessage = div.id;
+                        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
                         console.log("Data from: " + event.stream.getAttributes().name);
                     });
@@ -448,6 +451,7 @@ function sendMessage(){
 
         localStream.sendData({text:`${msg}`, timestamp:`${date}`});
         document.getElementById('inputChat').value ="";
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
     }
 }
 var tagsToReplace = {

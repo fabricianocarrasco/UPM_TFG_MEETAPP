@@ -85,8 +85,8 @@ N.API.init(config.nuve.superserviceID, config.nuve.superserviceKey, 'http://loca
 
 let defaultRoom;
 const defaultRoomName = 'basicExampleRoom';
-
-//setInterval(deleteEmptyRooms, 3000);
+let webinarNames = [];
+let roomNames = [];
 
 
 const getOrCreateRoom = (name, type = 'erizo', mediaConfiguration = 'default',
@@ -122,6 +122,7 @@ const getOrCreateRoom = (name, type = 'erizo', mediaConfiguration = 'default',
 //Con el array de las salas theRooms va comprobando las salas 1 a 1, saca el id de la sala y saca esa sala del array,
 //y cuando comprueba la sala vuelve a llamarse a si mismo con el array sin esa sala como parámetro.
 const deleteRoomsIfEmpty = (theRooms, callback) => {
+
   console.log('entrando en deleteRoomsIfEmpty');
   if (theRooms.length === 0) {
     callback(true);
@@ -135,7 +136,22 @@ const deleteRoomsIfEmpty = (theRooms, callback) => {
     if (Object.keys(users).length === 0) {
       N.API.deleteRoom(theRoomId._id, () => {
         deleteRoomsIfEmpty(theRooms, callback);
-        console.log("Sala " + theRoomId.name + " borrada");
+        //hace un bucle por los nombres de los webinars para borrar la que se ha eliminado
+        for( let i = 0; i < webinarNames.length; i++){
+          if ( webinarNames[i] === theRoomId.name) {
+            console.log(webinarNames.splice(i, 1));
+            console.log("Webinar: " +theRoomId.name + " deleted");
+            console.log(webinarNames);
+          }
+        }
+        //hace un bucle por los nombres de las salas para borrar la que se ha eliminado
+        for( let n = 0; n < roomNames.length; n++){
+          if ( roomNames[n] === theRoomId.name) {
+            console.log(roomNames.splice(n, 1));
+            console.log("Room: " + theRoomId.name + " deleted");
+            console.log(roomNames);
+          }
+        }
       });
     } else {
       deleteRoomsIfEmpty(theRooms, callback);
@@ -200,12 +216,12 @@ app.post('/auth',(req,res)=>{
         req.session.username = tem[0];
         res.redirect('/home?user='+ tem[0]);
       } else {
-        res.send('Incorrect Username and/or Password!');
+        res.redirect('/?error=auth');
       }
       res.end();
     });
   } else {
-    res.send('Please enter Username and Password!');
+    res.redirect('/?error=auth');
     res.end();
   }
 
@@ -215,39 +231,53 @@ app.get('/home',(req,res)=>{
 });
 
 app.post('/createRoom',(req,res)=>{
-  if(req.session.loggedin && req.session.username !== undefined){
+  if(roomNames.includes(req.body.roomName) || webinarNames.includes(req.body.roomName)){
+    res.redirect("/home?user=" + req.session.username);
+    res.end();
+  }else if(req.session.loggedin && req.session.username !== undefined){
+    roomNames.push(req.body.roomName);
     res.redirect('/room?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
     res.end();
   }else{
-    res.redirect("/");
+    res.redirect("/?error=timeout");
   }
 
 });
 app.post('/joinRoom',(req,res)=>{
-  if(req.session.loggedin && req.session.username !== undefined){
+  if(!roomNames.includes(req.body.roomName)){
+    res.redirect("/home?user=" + req.session.username);
+    res.end();
+  }else if(req.session.loggedin && req.session.username !== undefined){
     res.redirect('/room?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
     res.end();
   }else{
-    res.redirect("/");
+    res.redirect("/?error=timeout");
   }
 });
 app.get('/room', (req,res)=>{
     res.sendFile(path.join(__dirname + '/public/room.html'));
 });
 app.post('/createWebinar',(req,res)=>{
-  if(req.session.loggedin && req.session.username !== undefined){
+  if(webinarNames.includes(req.body.roomName) || roomNames.includes(req.body.roomName)){
+    res.redirect("/home?user=" + req.session.username);
+    res.end();
+  }else if(req.session.loggedin && req.session.username !== undefined){
+    webinarNames.push(req.body.roomName);
     res.redirect('/webinar?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
     res.end();
   }else{
-    res.redirect("/");
+    res.redirect("/?error=timeout");
   }
 });
 app.post('/joinWebinar',(req,res)=>{
-  if(req.session.loggedin && req.session.username !== undefined){
+  if(!webinarNames.includes(req.body.roomName)){
+    res.redirect("/home?user=" + req.session.username);
+    res.end();
+  }else if(req.session.loggedin && req.session.username !== undefined){
     res.redirect('/webinar?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
     res.end();
   }else{
-    res.redirect("/");
+    res.redirect("/?error=timeout");
   }
 });
 app.get('/webinar', (req,res)=>{

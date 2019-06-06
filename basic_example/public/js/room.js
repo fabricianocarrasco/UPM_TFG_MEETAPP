@@ -74,6 +74,7 @@ const subscribeToStreams = (streams, localStream, room) => {
     }
   });
 };
+
 const subscribeToStream = (stream, localStream, room) => {
   const cb = (evt) => {
     console.log('Bandwidth Alert', evt.msg, evt.bandwidth);
@@ -119,9 +120,42 @@ function usersInRoom(){
       }
     });
   });
-  
 
 }
+
+function nUsersInRoom(){
+    let nUsers = 0;
+    getRooms((response) => {
+        //convierte el JSON en un array de objetos para poder buscar
+        const rooms = JSON.parse(response);
+        //realiza un bucle forEach en el array de salas para buscar la que nos interesa
+        rooms.forEach(function(room){
+            //compara el nombre de las salas con el escrito en el cuadro de texto para ver si coinciden
+            if(room.name === document.getElementById('roomName').innerText){
+                //si coinciden los nombres saca el id de esa sala
+                const token = room._id;
+                console.log(token);
+                //con el id de la sala pide el servidor que envie los datos de los usuarios
+                getUsers((response)=>{
+                    //muestra el numero de usuarios en el chat de texto
+                    nUsers = JSON.parse(response).length;
+
+                    if (nUsers === 1) {
+                        document.getElementById("nUsers").innerText = nUsers +" user";
+                    }else{
+                        document.getElementById("nUsers").innerText = nUsers +" users";
+                    }
+
+                },token);
+            }
+        });
+
+    });
+
+    //return nUsers;
+}
+
+
 function createRoom(roomName){
   //TODO getRooms y si ya existe no se crea y salta un aviso en la pagina
   /*
@@ -137,7 +171,7 @@ function createRoom(roomName){
   if(roomName !== ""){
       const urlString = window.location.href;
       const url = new URL(urlString);
-      //crea una sala con el nombre de la sala, en un futuro username será el correo
+      //crea una sala con el nombre de la sala
     const roomData = { username: url.searchParams.get('user'),
     role: 'presenter',
     room: roomName,
@@ -149,101 +183,112 @@ function createRoom(roomName){
       console.log(token);
       //room = Erizo.Room({ token });
       room = Erizo.Room({token:token});
-       //conexión a la sala
+      //el nombre del stream debe coincidir con el nombre del usuario
+      localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 1920, 1080], attributes:{name:url.searchParams.get('user')}});
+      //conexión a la sala
       room.connect();
       room.addEventListener('room-connected',function(event){
-        console.log('conectado');
-        //el nombre del stream debe coincidir con el nombre del usuario
-        localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:url.searchParams.get('user')}});
+        console.log('Create: room connected +------------------------------+');
         //se inicia el stream
         localStream.init();
-        //si se acepta la cámara se inicia la reproduccion de video
-        localStream.addEventListener('access-accepted', function(event){
-            //se configura el container para almacenar los stream
-            document.getElementById('videoContainer').setAttribute('style', 'width: 320px; height: 240px; float:left');
-            //se publica el video en la sala
-          room.publish(localStream);
-          room.addEventListener('stream-added', function(addedEvent){
+        //muestra el numero de usuarios en el chat
+        nUsersInRoom();
+      });
+      //si se acepta la cámara se inicia la reproduccion de video
+      localStream.addEventListener('access-accepted', function(event){
+        //se configura el container para almacenar los stream
+        document.getElementById('videoContainer').setAttribute('style', 'width: 320; height: 240; float:left');
+        //se publica el video en la sala
+        room.publish(localStream);
 
-            if(localStream.getID() === addedEvent.stream.getID()){
+        console.log(`Create: show localStream +-------------------+`);
+        const div = document.createElement('div');
+        div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
+        div.setAttribute('id', `test${localStream.getID()}`);
+        document.getElementById('videoContainer').appendChild(div);
+        localStream.show(`test${localStream.getID()}`);
+
+      });
+      //en caso de no aceptar no se hace nada
+      localStream.addEventListener('access-denied', function(event){
+        console.log('Create: video no aceptado +------------+')
+      });
+      room.addEventListener('stream-added', function(addedEvent){
+
+          if(localStream.getID() === addedEvent.stream.getID()){
 
               console.log('Create: own stream added +--------------+');
+              nUsersInRoom();
 
-            }else  {
+          }else  {
 
               console.log(`Create: ${addedEvent.stream.getID()} stream added +--------------------+`);
               subscribeToStream(addedEvent.stream,localStream,room);
-            }
+              nUsersInRoom();
+          }
 
-          });
-          //cuando se elimina un stream de la conversación se activa
-          room.addEventListener('stream-removed', (addedEvent) => {
-            // Remove stream from DOM
-            const stream = addedEvent.stream;
-            if (document.getElementById(stream.elementID) !== undefined) {
-              
-              const element = document.getElementById(stream.elementID);
-              document.getElementById('videoContainer').removeChild(element);
+      });
+      //cuando se elimina un stream de la conversación se activa
+      room.addEventListener('stream-removed', (addedEvent) => {
+        // Remove stream from DOM
+        const stream = addedEvent.stream;
+        if (document.getElementById(stream.elementID) !== undefined) {
 
-              console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
-            }
-          });
-          //cuando se produce el evento de suscripción a un stream se activa
-          room.addEventListener('stream-subscribed', function(subscribedEvent){
+          const element = document.getElementById(stream.elementID);
+          document.getElementById('videoContainer').removeChild(element);
 
-            console.log(`Create: subscribed to ${subscribedEvent.stream.getID()}`);
-            const div = document.createElement('div');
-            div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
-            div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
-            document.getElementById('videoContainer').appendChild(div);
-            subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
-            console.log(`Create: playing test${subscribedEvent.stream.getID()} +----------+`);
-            //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
-            subscribedEvent.stream.addEventListener('stream-data', function(event){
-                //Creamos un elemento div para que se muestre el texto del chat
-                const div = document.createElement('div');
-                div.innerHTML = event.msg.text;
-                div.setAttribute('id', `chat${Date.now()}`);
-                //cambia el orden de los mensajes del chat para que se vaya llenando de arriba a abajo y deplazen lo antiguo
-                //contempla el caso de que no haya ningún mensaje en el chat y que ya haya alguno
-                if(lastMessage){
+          console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
-                    document.getElementById('chatMessages').insertBefore(div,document.getElementById(lastMessage));
+          nUsersInRoom();
+        }
+      });
 
-                }else{
+      //cuando se produce el evento de suscripción a un stream se activa
+      room.addEventListener('stream-subscribed', function(subscribedEvent){
 
-                    document.getElementById('chatMessages').appendChild(div);
+        console.log(`Create: subscribed to ${subscribedEvent.stream.getID()}`);
+        const div = document.createElement('div');
+        div.setAttribute('style', 'width: 320px; height: 240px; float:left;');
+        div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
+        document.getElementById('videoContainer').appendChild(div);
+        subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
+        console.log(`Create: playing test${subscribedEvent.stream.getID()} +----------+`);
 
-                }
-                lastMessage = div.id;
+        //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
+        subscribedEvent.stream.addEventListener('stream-data', function(event){
+          //Creamos un elemento div para que se muestre el texto del chat
+          const div1 = document.createElement('div');
+          div1.setAttribute('id', `chat${event.msg.timestamp}`);
+          div1.setAttribute('class', "d-flex justify-content-first mb-4");
+          const div2 =document.createElement('div');
+          div2.setAttribute('class',"img_cont_msg");
+          div1.appendChild(div2);
+          const div3 = document.createElement('div');
+          div3.setAttribute('class','msg_container');
+          div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
+          const span = document.createElement('span');
+          span.setAttribute('class','msg_time');
+          span.innerText= `${event.msg.timestamp}`;
+          div3.appendChild(span);
+          div1.appendChild(div3);
 
-            });
+          document.getElementById('chatMessages').appendChild(div1);
+          lastMessage = div1.id;
+          document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
-          });
-          
-          room.addEventListener('stream-failed', () => {
-            console.log('Stream Failed, act accordingly');
-          });
-
-          console.log(`Create: show localStream +-------------------+`);
-          const div = document.createElement('div');
-          div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
-          div.setAttribute('id', `test${localStream.getID()}`);
-          document.getElementById('videoContainer').appendChild(div);
-          localStream.show(`test${localStream.getID()}`);
-
+          console.log("Data from: " + event.stream.getAttributes().name);
         });
-        //en caso de no aceptar no se hace nada
-        localStream.addEventListener('access-denied', function(event){
-          console.log('Create: video no aceptado +------------+')
-        });  
-                
+
+      });
+
+      room.addEventListener('stream-failed', () => {
+        console.log('Stream Failed, act accordingly');
       });
 
     });  
        
   }else{
-    console.log('Create: debes introducir un nombre a la sala para crearla +------------+');
+    console.log('Join: debes introducir un nombre a la sala para crearla +------------+');
   }
   
 
@@ -262,160 +307,190 @@ function joinRoom(roomName){
 
     //si se le ha puesto nombre a la sala comienza la retrasmision
     if(roomName !== ""){
-        //crea una sala con el nombre de la sala, en un futuro username será el correo
-        const urlString = window.location.href;
-        const url = new URL(urlString);
+      const urlString = window.location.href;
+      const url = new URL(urlString);
+      //crea una sala con el nombre de la sala
+      const roomData = { username: url.searchParams.get('user'),
+        role: 'presenter',
+        room: roomName,
+        type: 'erizo'
+      };
+      //pide un token al servidor para que contacte con nuve y cree la sala y el usuario
+      createToken(roomData,(response) => {
+        const token = response;
+        console.log(token);
+        //room = Erizo.Room({ token });
+        room = Erizo.Room({token:token});
+        //el nombre del stream debe coincidir con el nombre del usuario
+        localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 1920, 1080], attributes:{name:url.searchParams.get('user')}});
+        //conexión a la sala
+        room.connect();
+        room.addEventListener('room-connected',function(event){
+          console.log('Join: room connected +------------------------------+');
+          //se inicia el stream
+          localStream.init();
+          //muestra el numero de usuarios en el chat
+          nUsersInRoom();
+          //se conecta y muestra los streams que ya estén en la sala
+          room.remoteStreams.forEach((stream)=>{
+            subscribeToStream(stream, localStream, room);
+          });
+        });
+        //si se acepta la cámara se inicia la reproduccion de video
+        localStream.addEventListener('access-accepted', function(event){
+          //se configura el container para almacenar los stream
+          document.getElementById('videoContainer').setAttribute('style', 'width: 320; height: 240; float:left');
+          //se publica el video en la sala
+          room.publish(localStream);
 
-        const roomData = { username: url.searchParams.get('user'),
-            role: 'presenter',
-            room: roomName,
-            type: 'erizo'
-        };
-        //pide un token al servidor para que contacte con nuve y cree la sala y el usuario
-        createToken(roomData,(response) => {
-            const token = response;
-            console.log(token);
-            //room = Erizo.Room({ token });
-            room = Erizo.Room({token:token});
-            //conexión a la sala
-            room.connect();
-            room.addEventListener('room-connected',function(event){
-                console.log('Join: room connected');
-                //el nombre del stream debe coincidir con el nombre del usuario
-                localStream = Erizo.Stream({video:true, audio:true, data:true, videoSize: [320, 240, 640, 480], attributes:{name:url.searchParams.get('user')}});
-                //se inicia el stream
-                localStream.init();
-                //si se acepta la cámara se inicia la reproduccion de video
-                localStream.addEventListener('access-accepted', function(event){
-                    //se configura el container para almacenar los stream
-                    document.getElementById('videoContainer').setAttribute('style', 'width: 320px; height: 240px; float:left');
-                    //se publica el video en la sala
-                    room.publish(localStream);
-                    //se conecta y muestra los streams que ya estén en la sala
-                    room.remoteStreams.forEach((stream)=>{
-                        subscribeToStream(stream, localStream, room);
-                    });
-                    room.addEventListener('stream-added', function(addedEvent){
+          console.log(`Join: show localStream +-------------------+`);
+          const div = document.createElement('div');
+          div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
+          div.setAttribute('id', `test${localStream.getID()}`);
+          document.getElementById('videoContainer').appendChild(div);
+          localStream.show(`test${localStream.getID()}`);
 
-                        if(localStream.getID() === addedEvent.stream.getID()){
+        });
+        //en caso de no aceptar no se hace nada
+        localStream.addEventListener('access-denied', function(event){
+          console.log('Join: video no aceptado +------------+')
+        });
+        room.addEventListener('stream-added', function(addedEvent){
 
-                            console.log('Join: own stream added +--------------+');
+          if(localStream.getID() === addedEvent.stream.getID()){
 
-                        }else  {
+            console.log('Join: own stream added +--------------+');
+            nUsersInRoom();
 
-                            console.log(`Join: ${addedEvent.stream.getID()} stream added +--------------------+`);
-                            subscribeToStream(addedEvent.stream,localStream,room);
-                        }
+          }else  {
 
-                    });
-                    //cuando se elimina un stream de la conversación se activa
-                    room.addEventListener('stream-removed', (addedEvent) => {
-                        // Remove stream from DOM
-                        const stream = addedEvent.stream;
-                        if (document.getElementById(stream.elementID) !== undefined) {
+            console.log(`Join: ${addedEvent.stream.getID()} stream added +--------------------+`);
+            subscribeToStream(addedEvent.stream,localStream,room);
+            nUsersInRoom();
+          }
 
-                            const element = document.getElementById(stream.elementID);
-                            document.getElementById('videoContainer').removeChild(element);
+        });
+        //cuando se elimina un stream de la conversación se activa
+        room.addEventListener('stream-removed', (addedEvent) => {
+          // Remove stream from DOM
+          const stream = addedEvent.stream;
+          if (document.getElementById(stream.elementID) !== undefined) {
 
-                            console.log(`Join: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
-                        }
-                    });
-                    //cuando se produce el evento de suscripción a un stream se activa
-                    room.addEventListener('stream-subscribed', function(subscribedEvent){
+            const element = document.getElementById(stream.elementID);
+            document.getElementById('videoContainer').removeChild(element);
 
-                        console.log(`Join: subscribed to ${subscribedEvent.stream.getID()}`);
-                        const div = document.createElement('div');
-                        div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
-                        div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
-                        document.getElementById('videoContainer').appendChild(div);
-                        subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
-                        console.log(`Join: playing test${subscribedEvent.stream.getID()} +----------+`);
-                        //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
-                        subscribedEvent.stream.addEventListener('stream-data', function(event){
-                            //Creamos un elemento div para que se muestre el texto del chat
-                            const div = document.createElement('div');
-                            div.innerHTML = event.msg.text;
-                            div.setAttribute('id', `chat${Date.now()}`);
-                            //cambia el orden de los mensajes del chat para que vyana llenando de arriba a abajo y deplazen lo antiguo
-                            //contempla el caso de que no haya ningún mensaje en el chat y que ya haya alguno
-                            if(lastMessage){
+            console.log(`Join: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
-                                document.getElementById('chatMessages').insertBefore(div,document.getElementById(lastMessage));
+            nUsersInRoom();
+          }
+        });
 
-                            }else{
+        //cuando se produce el evento de suscripción a un stream se activa
+        room.addEventListener('stream-subscribed', function(subscribedEvent){
 
-                                document.getElementById('chatMessages').appendChild(div);
+          console.log(`Join: subscribed to ${subscribedEvent.stream.getID()}`);
+          const div = document.createElement('div');
+          div.setAttribute('style', 'width: 320px; height: 240px; float:left;');
+          div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
+          document.getElementById('videoContainer').appendChild(div);
+          subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
+          console.log(`Join: playing test${subscribedEvent.stream.getID()} +----------+`);
 
-                            }
-                            lastMessage = div.id;
+          //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
+          subscribedEvent.stream.addEventListener('stream-data', function(event){
+            //Creamos un elemento div para que se muestre el texto del chat
+            const div1 = document.createElement('div');
+            div1.setAttribute('id', `chat${event.msg.timestamp}`);
+            div1.setAttribute('class', "d-flex justify-content-first mb-4");
+            const div2 =document.createElement('div');
+            div2.setAttribute('class',"img_cont_msg");
+            div1.appendChild(div2);
+            const div3 = document.createElement('div');
+            div3.setAttribute('class','msg_container');
+            div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
+            const span = document.createElement('span');
+            span.setAttribute('class','msg_time');
+            span.innerText= `${event.msg.timestamp}`;
+            div3.appendChild(span);
+            div1.appendChild(div3);
 
-                        });
+            document.getElementById('chatMessages').appendChild(div1);
+            lastMessage = div1.id;
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
-                    });
-
-                    room.addEventListener('stream-failed', () => {
-                        console.log('Stream Failed, act accordingly');
-                    });
-
-                    console.log(`Create: show localStream +-------------------+`);
-                    const div = document.createElement('div');
-                    div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
-                    div.setAttribute('id', `test${localStream.getID()}`);
-                    document.getElementById('videoContainer').appendChild(div);
-                    localStream.show(`test${localStream.getID()}`);
-
-                });
-                //en caso de no aceptar no se hace nada
-                localStream.addEventListener('access-denied', function(event){
-                    console.log('Create: video no aceptado +------------+')
-                });
-
-            });
+            console.log("Data from: " + event.stream.getAttributes().name);
+          });
 
         });
 
+        room.addEventListener('stream-failed', () => {
+          console.log('Stream Failed, act accordingly');
+        });
+
+      });
+
     }else{
-        console.log('Create: debes introducir un nombre a la sala para crearla +------------+');
+      console.log('Join: debes introducir un nombre a la sala para crearla +------------+');
     }
 
 
 }
-
 function sendMessage(){
-  if(document.getElementById('inputChat').value !== ""){
-    const div = document.createElement('div');
-    
-    div.innerHTML = document.getElementById('inputChat').value;
-    const date = Date.now();
-    div.setAttribute('id', `chat${date}`);
-    
-    if(lastMessage){
-      document.getElementById('chatMessages').insertBefore(div,document.getElementById(lastMessage));  
-    }else{
-      document.getElementById('chatMessages').appendChild(div);  
+    if(document.getElementById('inputChat').value !== ""){
+        const div = document.createElement('div');
+
+        const date = Date.now();
+        div.setAttribute('id', `chat${date}`);
+        div.setAttribute('class', "d-flex justify-content-end mb-4");
+        const div3 = document.createElement('div');
+        div3.setAttribute('class','msg_container_send');
+        div3.innerHTML = safe_tags_replace(document.getElementById('inputChat').value);
+        const span = document.createElement('span');
+        span.setAttribute('class','msg_time_send');
+        span.innerText= `${date}`;
+        div3.appendChild(span);
+        const div2 =document.createElement('div');
+        div2.setAttribute('class',"img_cont_msg");
+        div.appendChild(div3);
+        div.appendChild(div2);
+
+        document.getElementById('chatMessages').appendChild(div);
+
+        const msg = document.getElementById('inputChat').value;
+
+        localStream.sendData({text:`${msg}`, timestamp:`${date}`});
+        document.getElementById('inputChat').value = "";
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
     }
+}
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
 
-    lastMessage = div.id;
-    const msg = document.getElementById('inputChat').value;
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
 
-    localStream.sendData({text:`${msg}`, timestamp:`${date}`});
-  }
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
 }
 
 window.onload = () => {
-  const urlString = window.location.href;
-  const url = new URL(urlString);
-  const roomName = url.searchParams.get('room');
-  const status = url.searchParams.get('status');
+    const urlString = window.location.href;
+    const url = new URL(urlString);
+    const roomName = url.searchParams.get('room');
+    const status = url.searchParams.get('status');
 
-  document.getElementById('roomName').innerHTML = roomName;
+    document.getElementById('roomName').innerHTML = safe_tags_replace(roomName);
 
-  if(status === 'create'){
-    createRoom(roomName);
-  }else if(status === 'join'){
-    joinRoom(roomName);
-  }else{
-    window.location = '/home.html'
-  }
+    if(status === 'create'){
+        createRoom(roomName);
+    }else if(status === 'join'){
+        joinRoom(roomName);
+    }else{
+        window.location = '/home.html'
+    }
 
 };

@@ -68,7 +68,10 @@ function joinWebinar(){
     $.get('/webinar', { status:"join", room: document.getElementById('roomName').value,user: url.searchParams.get('user')});
 }
 setInterval(() => {
-    checkRooms();
+    if(document.getElementById( 'roomName').value.length > 0){
+        checkRooms();
+    }
+
 }, 1000);
 
 function checkRooms(){
