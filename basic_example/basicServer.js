@@ -139,17 +139,32 @@ const deleteRoomsIfEmpty = (theRooms, callback) => {
         //hace un bucle por los nombres de los webinars para borrar la que se ha eliminado
         for( let i = 0; i < webinarNames.length; i++){
           if ( webinarNames[i] === theRoomId.name) {
-            console.log(webinarNames.splice(i, 1));
-            console.log("Webinar: " +theRoomId.name + " deleted");
-            console.log(webinarNames);
+            connection.query("DELETE FROM rooms WHERE name = ?",[theRoomId.name],(error,result,fields)=>{
+              if(error) throw error;
+              if (result) {
+                console.log(webinarNames.splice(i, 1));
+                console.log("Webinar: " +theRoomId.name + " deleted");
+                console.log(webinarNames);
+              } else {
+              }
+            });
           }
         }
         //hace un bucle por los nombres de las salas para borrar la que se ha eliminado
         for( let n = 0; n < roomNames.length; n++){
           if ( roomNames[n] === theRoomId.name) {
-            console.log(roomNames.splice(n, 1));
-            console.log("Room: " + theRoomId.name + " deleted");
-            console.log(roomNames);
+            console.log("RoomName found");
+            connection.query("DELETE FROM rooms WHERE name = ?",[theRoomId.name],(error,result,fields)=>{
+              if(error) throw error;
+              if (result) {
+                console.log(roomNames.splice(n, 1));
+                console.log("Room: " + theRoomId.name + " deleted");
+                console.log(roomNames);
+              } else {
+
+              }
+            });
+
           }
         }
       });
@@ -197,12 +212,12 @@ app.get('/getRooms/', (req, res) => {
     res.send(rooms);
   });
 });
-//Código de la pagina de login
+//Se encarga de devolver la pagina de login
 app.get('/',(req,res)=>{
    res.sendFile(path.join(__dirname + '/public/login.html'));
 });
+//Comprueba las credenciales de los usuarios y si son correctas crea una sesion y reenvia a la pagina principal en case de error vuelve a la pagina de login.
 app.post('/auth',(req,res)=>{
-
   let email = req.body.inputEmail;
   let password = req.body.inputPassword;
   const hash = crypto.createHash('sha256');
@@ -224,58 +239,215 @@ app.post('/auth',(req,res)=>{
     res.redirect('/?error=auth');
     res.end();
   }
-
 });
+//Se encarga de devolver la pagina principal
 app.get('/home',(req,res)=>{
   res.sendFile(path.join(__dirname + '/public/home.html'));
 });
-
+//Se encarga de las llamadas a createRoom, mira a ver si el nombre de la sala esta cogido, si es asi devuelve a la creacion de salas
+//en caso de que no exista comprueba si se ha introducido valor de contraseña y si es asi lo añade a la BBDD, si el usuario esta loggeado.
 app.post('/createRoom',(req,res)=>{
-  if(roomNames.includes(req.body.roomName) || webinarNames.includes(req.body.roomName)){
-    res.redirect("/home?user=" + req.session.username);
+  let roomName = req.body.roomName;
+  let roomPassword = req.body.roomPassword;
+  let username = req.session.username;
+  if(roomNames.includes(roomName) || webinarNames.includes(roomName)){
+    console.log("Error 1");
+    res.redirect("/home?user=" + username);
     res.end();
-  }else if(req.session.loggedin && req.session.username !== undefined){
-    roomNames.push(req.body.roomName);
-    res.redirect('/room?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
-    res.end();
+  }else if(req.session.loggedin && username !== undefined){
+    if(roomPassword === "" || roomPassword === undefined){
+      console.log("previo sentencia SQL");
+      connection.query("INSERT INTO rooms (name,type) values (?,?)",[roomName,'room'],(error,result,fields)=>{
+        if(error) {
+          console.log("Error 2");
+          res.redirect("/home?user=" + username);
+          res.end();
+        }else if (result) {
+          console.log("SQL funciona bien");
+          roomNames.push(roomName);
+          console.log("Error 3");
+          res.redirect('/room?status=create&room='+ roomName +'&user=' + username);
+          res.end();
+        } else {
+          console.log("Error 4");
+          res.redirect("/home?user=" + username);
+          res.end();
+        }
+      });
+    }else if(roomPassword !== "" && roomPassword){
+      const hash = crypto.createHash('sha256');
+      hash.update(roomPassword);
+      connection.query("INSERT INTO rooms (name,type,password) values (?,?,?)",[roomName,'room',hash.digest('hex')],(error,result,fields)=>{
+        if(error) {
+          console.log("Error 5");
+          res.redirect("/home?user=" + username);
+          res.end();
+        }else if (result) {
+          roomNames.push(roomName);
+          console.log("Error 6");
+          res.redirect('/room?status=create&room='+ roomName +'&user=' + username);
+          res.end();
+        } else {
+          console.log("Error 7");
+          res.redirect("/home?user=" + username);
+          res.end();
+        }
+      });
+    }else{
+      console.log("Error 8");
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
+
   }else{
+    console.log("Error 9");
     res.redirect("/?error=timeout");
+    res.end();
   }
 
 });
+//Se encarga de manejar la llamada a joinRoom. Comprueba si existe la sala y sus credenciales.
 app.post('/joinRoom',(req,res)=>{
-  if(!roomNames.includes(req.body.roomName)){
-    res.redirect("/home?user=" + req.session.username);
+  let roomName = req.body.roomName;
+  let roomPassword = req.body.roomPassword;
+  let username = req.session.username;
+  if(!roomNames.includes(roomName)){
+    console.log("Error 1");
+    res.redirect("/home?user=" + username);
     res.end();
-  }else if(req.session.loggedin && req.session.username !== undefined){
-    res.redirect('/room?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
-    res.end();
+  }else if(req.session.loggedin && username !== undefined){
+    console.log("Error 2");
+    connection.query("SELECT * FROM rooms WHERE name = ? ",[roomName],(error,result,fields)=>{
+      console.log("Error 3");
+      if(error) {
+        res.redirect("/home?user=" + username);
+        res.end();
+      }else if (result && result.length > 0) {
+        console.log("Error 4");
+        const hash = crypto.createHash('sha256');
+        hash.update(roomPassword);
+        let password = hash.digest('hex');
+        if(result[0].password !== null && result[0].password === password){
+          console.log("Error 5");
+          res.redirect('/room?status=join&room='+ roomName +'&user=' + username);
+          res.end();
+        }else if(result[0].password === null){
+          console.log("Error 6");
+          res.redirect('/room?status=join&room='+ roomName +'&user=' + username);
+          res.end();
+        }else{
+          console.log("Error 7");
+          res.redirect("/home?user=" + username + "&error=password");
+          res.end();
+        }
+
+      } else {
+        console.log("Error 8");
+        res.redirect("/home?user=" + username);
+        res.end();
+      }
+    });
   }else{
+    console.log("Error 10");
     res.redirect("/?error=timeout");
+    res.end()
   }
 });
+//Se encarga de enviar el archivo de la sala
 app.get('/room', (req,res)=>{
     res.sendFile(path.join(__dirname + '/public/room.html'));
 });
+
+//Se encarga de las llamadas a createWebinar, mira a ver si el nombre de la sala esta cogido, si es asi devuelve a la creacion de salas
+//en caso de que no exista comprueba si se ha introducido valor de contraseña y si es asi lo añade a la BBDD, si el usuario esta loggeado.
 app.post('/createWebinar',(req,res)=>{
-  if(webinarNames.includes(req.body.roomName) || roomNames.includes(req.body.roomName)){
-    res.redirect("/home?user=" + req.session.username);
+  let roomName = req.body.roomName;
+  let roomPassword = req.body.roomPassword;
+  let username = req.session.username;
+  if(webinarNames.includes(roomName) || roomNames.includes(roomName)){
+    res.redirect("/home?user=" + username);
     res.end();
-  }else if(req.session.loggedin && req.session.username !== undefined){
-    webinarNames.push(req.body.roomName);
-    res.redirect('/webinar?status=create&room='+ req.body.roomName +'&user=' + req.session.username);
-    res.end();
+  }else if(req.session.loggedin && username !== undefined){
+    if(roomPassword === "" || roomName === undefined){
+      connection.query("INSERT INTO rooms (name,type) values (?,?)",[roomName,'webinar'],(error,result,fields)=>{
+        if(error) {
+          res.redirect("/home?user=" + username);
+          res.end();
+        }else if (result) {
+          webinarNames.push(roomName);
+          res.redirect('/webinar?status=create&room='+ roomName +'&user=' + username);
+          res.end();
+        } else {
+          res.redirect("/home?user=" + username);
+          res.end();
+        }
+      });
+
+    }else if(roomPassword !== "" && roomPassword){
+      const hash = crypto.createHash('sha256');
+      hash.update(roomPassword);
+      connection.query("INSERT INTO rooms (name,type,password) values (?,?,?)",[roomName,'webinar',hash.digest('hex')],(error,result,fields)=>{
+        if(error) {
+          res.redirect("/home?user=" + username);
+          res.end();
+        }else if (result) {
+          webinarNames.push(roomName);
+          res.redirect('/room?status=create&room='+ roomName +'&user=' + username);
+          res.end();
+        } else {
+          res.redirect("/home?user=" + username);
+          res.end();
+        }
+      });
+    }else{
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
+
   }else{
     res.redirect("/?error=timeout");
+    res.end();
   }
 });
+
 app.post('/joinWebinar',(req,res)=>{
+  let roomName = req.body.roomName;
+  let roomPassword = req.body.roomPassword;
+  let username = req.session.username;
   if(!webinarNames.includes(req.body.roomName)){
     res.redirect("/home?user=" + req.session.username);
     res.end();
   }else if(req.session.loggedin && req.session.username !== undefined){
-    res.redirect('/webinar?status=join&room='+ req.body.roomName +'&user=' + req.session.username);
-    res.end();
+    connection.query("SELECT * FROM rooms WHERE name = ? ",[roomName],(error,result,fields)=>{
+      console.log("Error 3");
+      if(error) {
+        res.redirect("/home?user=" + username);
+        res.end();
+      }else if (result && result.length > 0) {
+        console.log("Error 4");
+        const hash = crypto.createHash('sha256');
+        hash.update(roomPassword);
+        let password = hash.digest('hex');
+        if(result[0].password !== null && result[0].password === password){
+          console.log("Error 5");
+          res.redirect('/webinar?status=join&room='+ roomName +'&user=' + username);
+          res.end();
+        }else if(result[0].password === null){
+          console.log("Error 6");
+          res.redirect('/webinar?status=join&room='+ roomName +'&user=' + username);
+          res.end();
+        }else{
+          console.log("Error 7");
+          res.redirect("/home?user=" + username + "&error=password");
+          res.end();
+        }
+
+      } else {
+        console.log("Error 8");
+        res.redirect("/home?user=" + username);
+        res.end();
+      }
+    });
   }else{
     res.redirect("/?error=timeout");
   }

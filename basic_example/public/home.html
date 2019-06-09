@@ -33,7 +33,20 @@
         <div id="homeForm" class="col-8 room-selected h-200">
             <form  class = "text-center " method="post" >
                 <div class="row">
-                    <input required="" autofocus  autocomplete="off" class="col name-input" name="roomName" id="roomName" type='text'>
+                    <div class="col form-label-group">
+                        <input name='roomName' id="roomName" autocomplete="off" class="form-control" placeholder="Room name" required="" autofocus="">
+                        <label for="roomName">Room name</label>
+                    </div>
+                    <div>
+                        <span id="roomAvailable" class="col check" hidden>&#10003;</span>
+                    </div>
+                    <div>
+                        <span id="roomNotAvailable" class="col x" hidden>&#10007;</span>
+                    </div>
+                    <div class="col form-label-group">
+                        <input type="password" name='roomPassword' autocomplete="off" id="roomPassword" class="form-control" placeholder="Room Password" >
+                        <label for="roomPassword">Password</label>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col">

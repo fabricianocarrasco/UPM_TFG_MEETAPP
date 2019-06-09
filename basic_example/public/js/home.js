@@ -43,7 +43,7 @@ function joinRoom(){
     const urlString = window.location.href;
     const url = new URL(urlString);
     $.get('/room', { status:"join", room: document.getElementById('roomName').value,user: url.searchParams.get('user')});
- 
+
 }
 
 function createWebinar(){
@@ -55,7 +55,7 @@ function createWebinar(){
     const urlString = window.location.href;
     const url = new URL(urlString);
     $.get('/webinar', { status:"create", room: document.getElementById('roomName').value,user: url.searchParams.get('user')});
-  
+
 }
 
 function joinWebinar(){
@@ -85,12 +85,18 @@ function checkRooms(){
                 if (document.getElementById( 'roomName').value.length > 0 && document.getElementById('roomName').value === room.name){
                     document.getElementById('roomName').classList.remove('no-room');
                     document.getElementById('roomName').classList.add('existing-room');
+                    document.getElementById('roomAvailable').setAttribute("hidden", "hidden");
+                    document.getElementById('roomNotAvailable').removeAttribute('hidden');
                 }else if(document.getElementById( 'roomName').value.length > 0){
                     document.getElementById('roomName').classList.add('no-room');
                     document.getElementById('roomName').classList.remove('existing-room');
+                    document.getElementById('roomNotAvailable').setAttribute("hidden", "hidden");
+                    document.getElementById('roomAvailable').removeAttribute('hidden');
                 }else{
                     document.getElementById('roomName').classList.remove('no-room');
                     document.getElementById('roomName').classList.remove('existing-room');
+                    document.getElementById('roomAvailable').setAttribute("hidden", "hidden");
+                    document.getElementById('roomNotAvailable').setAttribute('hidden','hidden');
                 }
             });
         }

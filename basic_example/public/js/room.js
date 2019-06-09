@@ -230,17 +230,25 @@ function createRoom(roomName){
       });
       //cuando se elimina un stream de la conversación se activa
       room.addEventListener('stream-removed', (addedEvent) => {
-        // Remove stream from DOM
+        // Remove stream
         const stream = addedEvent.stream;
-        if (document.getElementById(stream.elementID) !== undefined) {
+        //Muestra en el chat quien se ha ido de la sala
+        const div = document.createElement('div');
+        div.setAttribute('class', "d-flex justify-content-first mb-4");
+        div.innerHTML = "<b>" + safe_tags_replace(stream.getAttributes().name) + " has left the room </b>";
+        document.getElementById('chatMessages').appendChild(div);
+        lastMessage = div.id;
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        if (document.getElementById(`test${stream.getID()}`) !== undefined) {
 
-          const element = document.getElementById(stream.elementID);
+          const element = document.getElementById(`test${stream.getID()}`);
           document.getElementById('videoContainer').removeChild(element);
 
           console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
-          nUsersInRoom();
         }
+        nUsersInRoom();
+
       });
 
       //cuando se produce el evento de suscripción a un stream se activa
@@ -253,6 +261,14 @@ function createRoom(roomName){
         document.getElementById('videoContainer').appendChild(div);
         subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
         console.log(`Create: playing test${subscribedEvent.stream.getID()} +----------+`);
+
+        //Muestra en el chat quien se ha unido a la sala
+        const div2 = document.createElement('div');
+        div2.setAttribute('class', "d-flex justify-content-first mb-4");
+        div2.innerHTML = "<b>" + safe_tags_replace(subscribedEvent.stream.getAttributes().name) + " has join the room </b>";
+        document.getElementById('chatMessages').appendChild(div2);
+        lastMessage = div2.id;
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
         //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
         subscribedEvent.stream.addEventListener('stream-data', function(event){
@@ -372,17 +388,25 @@ function joinRoom(roomName){
         });
         //cuando se elimina un stream de la conversación se activa
         room.addEventListener('stream-removed', (addedEvent) => {
-          // Remove stream from DOM
+          // Remove stream
           const stream = addedEvent.stream;
-          if (document.getElementById(stream.elementID) !== undefined) {
+          //Muestra en el chat quien se ha ido de la sala
+          const div = document.createElement('div');
+          div.setAttribute('class', "d-flex justify-content-first mb-4");
+          div.innerHTML = "<b>" + safe_tags_replace(stream.getAttributes().name) + " has left the room </b>";
+          document.getElementById('chatMessages').appendChild(div);
+          lastMessage = div.id;
+          document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+          if (document.getElementById(`test${stream.getID()}`) !== undefined) {
 
-            const element = document.getElementById(stream.elementID);
+            const element = document.getElementById(`test${stream.getID()}`);
             document.getElementById('videoContainer').removeChild(element);
 
-            console.log(`Join: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
+            console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
-            nUsersInRoom();
           }
+          nUsersInRoom();
+
         });
 
         //cuando se produce el evento de suscripción a un stream se activa
@@ -395,6 +419,14 @@ function joinRoom(roomName){
           document.getElementById('videoContainer').appendChild(div);
           subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
           console.log(`Join: playing test${subscribedEvent.stream.getID()} +----------+`);
+
+          //Muestra en el chat quien se ha unido a la sala
+          const div2 = document.createElement('div');
+          div2.setAttribute('class', "d-flex justify-content-first mb-4");
+          div2.innerHTML = "<b>" + safe_tags_replace(subscribedEvent.stream.getAttributes().name) + " has join the room </b>";
+          document.getElementById('chatMessages').appendChild(div2);
+          lastMessage = div2.id;
+          document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
           //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
           subscribedEvent.stream.addEventListener('stream-data', function(event){
