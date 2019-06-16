@@ -6511,7 +6511,7 @@ var Erizo = function (n) {
         a.div = document.createElement("div");
         a.div.setAttribute("id", "player_" + a.id);
         a.div.setAttribute("class", "licode_player");
-        a.div.setAttribute("style", "width: 100%; height: 100%; position: relative; background-color: black; overflow: hidden;");
+        a.div.setAttribute("style", "width: 100%; height: 100%; position: relative; overflow: hidden;");
         !1 !== c.options.loader && (a.loader = document.createElement("img"), a.loader.setAttribute("style", "width: 16px; height: 16px; position: absolute; top: 50%; left: 50%; margin-top: -8px; margin-left: -8px"), a.loader.setAttribute("id", "back_" + a.id), a.loader.setAttribute("class", "licode_loader"), a.loader.setAttribute("src", a.url + "/assets/loader.gif"));
         a.video = document.createElement("video");
         a.video.setAttribute("id", "stream" + a.id);
@@ -6528,7 +6528,7 @@ var Erizo = function (n) {
         a.div.appendChild(a.video);
         a.containerWidth = 0;
         a.containerHeight = 0;
-        !1 !== c.options.resizer && (a.resizer = L.ResizeSensor(a.container, a.resize), a.resize());
+        //!1 !== c.options.resizer && (a.resizer = L.ResizeSensor(a.container, a.resize), a.resize());
         !1 !== c.options.bar ? (a.bar = Object(f.a)({
             elementID: "player_" + a.id,
             id: a.id,

@@ -146,18 +146,6 @@ function nUsersInRoom(){
 }
 
 function createWebinar(webinarName){
-    //TODO getRooms y si ya existe no se crea y salta un aviso en la pagina
-    /*
-    testEmptyName((response) => {
-      console.log(response);
-      if(response){
-        alert('ya existe una sala con ese nombre')
-      }
-    }, webinarName);
-    */
-
-    //si se le ha puesto nombre a la sala comienza la retrasmision
-    if(webinarName !== ""){
         //crea una sala con el nombre de la sala
         const urlString = window.location.href;
         const url = new URL(urlString);
@@ -275,7 +263,7 @@ function createWebinar(webinarName){
 
                     console.log(`Create: show localStream +-------------------+`);
                     const div = document.createElement('div');
-                    div.setAttribute('style', 'width: 320px; height: 240px; float:center;');
+                    div.setAttribute('style', 'width: 100%; height: 100%; float:center;');
                     div.setAttribute('id', `test${localStream.getID()}`);
                     document.getElementById('videoContainer').appendChild(div);
                     localStream.show(`test${localStream.getID()}`);
@@ -291,27 +279,12 @@ function createWebinar(webinarName){
 
         });
 
-    }else{
-        console.log('Create: debes introducir un nombre a la sala para crearla +------------+');
-    }
-
 
 }
 
 function joinWebinar(webinarName){
-    //TODO getRooms y si ya existe no se crea y salta un aviso en la pagina
-    /*
-    testEmptyName((response) => {
-      console.log(response);
-      if(response){
-        alert('ya existe una sala con ese nombre')
-      }
-    }, webinarName);
-    */
 
-    //si se le ha puesto nombre a la sala comienza la retrasmision
-    if(webinarName !== ""){
-        //crea una sala con el nombre de la sala, en un futuro username será el correo
+        //crea una sala con el nombre de la sala
         const urlString = window.location.href;
         const url = new URL(urlString);
 
@@ -441,10 +414,6 @@ function joinWebinar(webinarName){
             });
 
         });
-
-    }else{
-        console.log('Join: debes introducir un nombre a la sala para crearla +------------+');
-    }
 
 
 }

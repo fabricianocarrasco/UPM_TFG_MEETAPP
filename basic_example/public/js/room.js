@@ -157,21 +157,10 @@ function nUsersInRoom(){
 
 
 function createRoom(roomName){
-  //TODO getRooms y si ya existe no se crea y salta un aviso en la pagina
-  /*
-  testEmptyName((response) => {
-    console.log(response);
-    if(response){
-      alert('ya existe una sala con ese nombre')
-    }
-  }, roomName);
-  */
 
-  //si se le ha puesto nombre a la sala comienza la retrasmision
-  if(roomName !== ""){
-      const urlString = window.location.href;
-      const url = new URL(urlString);
-      //crea una sala con el nombre de la sala
+    const urlString = window.location.href;
+    const url = new URL(urlString);
+    //crea una sala con el nombre de la sala
     const roomData = { username: url.searchParams.get('user'),
     role: 'presenter',
     room: roomName,
@@ -197,7 +186,7 @@ function createRoom(roomName){
       //si se acepta la cámara se inicia la reproduccion de video
       localStream.addEventListener('access-accepted', function(event){
         //se configura el container para almacenar los stream
-        document.getElementById('videoContainer').setAttribute('style', 'width: 320; height: 240; float:left');
+        document.getElementById('videoLocal').setAttribute('style', 'width: 360px; height: 240px; float:left');
         //se publica el video en la sala
         room.publish(localStream);
 
@@ -205,7 +194,7 @@ function createRoom(roomName){
         const div = document.createElement('div');
         div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
         div.setAttribute('id', `test${localStream.getID()}`);
-        document.getElementById('videoContainer').appendChild(div);
+        document.getElementById('videoLocal').appendChild(div);
         localStream.show(`test${localStream.getID()}`);
 
       });
@@ -301,28 +290,12 @@ function createRoom(roomName){
         console.log('Stream Failed, act accordingly');
       });
 
-    });  
-       
-  }else{
-    console.log('Join: debes introducir un nombre a la sala para crearla +------------+');
-  }
-  
+    });
 
 }
 
 function joinRoom(roomName){
-    //TODO getRooms y si ya existe no se crea y salta un aviso en la pagina
-    /*
-    testEmptyName((response) => {
-      console.log(response);
-      if(response){
-        alert('ya existe una sala con ese nombre')
-      }
-    }, roomName);
-    */
 
-    //si se le ha puesto nombre a la sala comienza la retrasmision
-    if(roomName !== ""){
       const urlString = window.location.href;
       const url = new URL(urlString);
       //crea una sala con el nombre de la sala
@@ -347,15 +320,11 @@ function joinRoom(roomName){
           localStream.init();
           //muestra el numero de usuarios en el chat
           nUsersInRoom();
-          //se conecta y muestra los streams que ya estén en la sala
-          room.remoteStreams.forEach((stream)=>{
-            subscribeToStream(stream, localStream, room);
-          });
         });
         //si se acepta la cámara se inicia la reproduccion de video
         localStream.addEventListener('access-accepted', function(event){
           //se configura el container para almacenar los stream
-          document.getElementById('videoContainer').setAttribute('style', 'width: 320; height: 240; float:left');
+          document.getElementById('videoLocal').setAttribute('style', 'width: 320; height: 240; float:left');
           //se publica el video en la sala
           room.publish(localStream);
 
@@ -363,8 +332,13 @@ function joinRoom(roomName){
           const div = document.createElement('div');
           div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
           div.setAttribute('id', `test${localStream.getID()}`);
-          document.getElementById('videoContainer').appendChild(div);
+          document.getElementById('videoLocal').appendChild(div);
           localStream.show(`test${localStream.getID()}`);
+
+          //se conecta y muestra los streams que ya estén en la sala
+          room.remoteStreams.forEach((stream)=>{
+            subscribeToStream(stream, localStream, room);
+          });
 
         });
         //en caso de no aceptar no se hace nada
@@ -460,10 +434,6 @@ function joinRoom(roomName){
         });
 
       });
-
-    }else{
-      console.log('Join: debes introducir un nombre a la sala para crearla +------------+');
-    }
 
 
 }

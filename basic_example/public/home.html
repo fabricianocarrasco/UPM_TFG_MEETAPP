@@ -13,29 +13,36 @@
 
 <body>
 <div class="container-fluid mh-100 mw-100">
+
     <div class="row head">
+
 
     </div>
     <div class = "row">
         <div class="col">
         </div>
         <div class="col-8 text-center">
-            <h1 class="text-center"  id='aplicationTitle'> MeetApp </h1>
+            <h1 class="page-header application-title"  id='applicationTitle'> MeetApp </h1>
             <h2 class="text-center" id="username"></h2>
         </div>
         <div class="col">
+        </div>
+    </div>
+    <div class="row space ">
+        <div class="col h-100">
+
         </div>
     </div>
     <div class="row">
         <div class="col">
 
         </div>
-        <div id="homeForm" class="col-8 room-selected h-200">
+        <div id="homeForm" class="col-8 form room-selected h-200">
             <form  class = "text-center " method="post" >
                 <div class="row">
                     <div class="col form-label-group">
                         <input name='roomName' id="roomName" autocomplete="off" class="form-control" placeholder="Room name" required="" autofocus="">
-                        <label for="roomName">Room name</label>
+                        <label id="roomLabel" for="roomName">Room name</label>
                     </div>
                     <div>
                         <span id="roomAvailable" class="col check" hidden>&#10003;</span>
@@ -74,12 +81,30 @@
         <div class="col">
 
         </div>
-        <div class="col-8">
-            <div class="row">
+        <div class="col-8 form text-center">
+            <div class="row form align-items-center">
                 <button id="selectRoomButton"  class="col btn btn-primary button-select" onClick="selectRoom()" >Room</button>
 
                 <button id="selectWebinarButton" class="col btn btn-secondary button-select" onClick="selectWebinar()">Webinar</button>
             </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+
+        </div>
+        <div class="col-8">
+
+                <div id="password-error" class="alert alert-warning alert-dismissible fade show" role="alert" hidden>
+                    <strong>The room requires a password!</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
         </div>
         <div class="col">
 

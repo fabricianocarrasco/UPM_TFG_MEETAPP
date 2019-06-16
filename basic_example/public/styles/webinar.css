@@ -1,3 +1,55 @@
+.header{
+    color: white;
+    /*font: bold 24px/45px Helvetica, Sans-Serif;*/
+    letter-spacing: -1px;
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    position: fixed;
+    left: 0;
+    border-radius: 0 0.5rem 0.5rem 0.5rem !important;
+}
+.licode_stream{
+    width: 100%;
+    height: auto;
+    max-height:100%;
+    max-width:100%;
+    position: absolute;
+    margin-bottom: 0;
+
+}
+.licode_player{
+    width: 100%;
+    height: 100%;
+    max-height:100%;
+    max-width:100%;
+    overflow: hidden;
+    background-color: transparent; !important
+}
+/*
+.licode_bar{
+    width: 60%; !important;
+    height: 100%;
+    max-height: 30px;
+    position: absolute; !important;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(255,255,255,0.62)
+}
+.licode_link{
+
+}
+.licode_logo{
+    position: relative;
+    bottom: 30px;
+    left: 0;
+}
+.licode_volume{
+    position: absolute;
+    bottom: 30px;
+    right: 0;
+}
+*/
 .left_side{
     width: 40%;
     height: 100%;

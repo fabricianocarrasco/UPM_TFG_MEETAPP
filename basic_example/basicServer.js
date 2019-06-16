@@ -135,7 +135,6 @@ const deleteRoomsIfEmpty = (theRooms, callback) => {
     const users = JSON.parse(userlist);
     if (Object.keys(users).length === 0) {
       N.API.deleteRoom(theRoomId._id, () => {
-        deleteRoomsIfEmpty(theRooms, callback);
         //hace un bucle por los nombres de los webinars para borrar la que se ha eliminado
         for( let i = 0; i < webinarNames.length; i++){
           if ( webinarNames[i] === theRoomId.name) {
@@ -167,6 +166,7 @@ const deleteRoomsIfEmpty = (theRooms, callback) => {
 
           }
         }
+        deleteRoomsIfEmpty(theRooms, callback);
       });
     } else {
       deleteRoomsIfEmpty(theRooms, callback);
@@ -223,13 +223,12 @@ app.post('/auth',(req,res)=>{
   const hash = crypto.createHash('sha256');
   hash.update(password);
   if (email && password){
-    connection.query("SELECT * FROM users WHERE email = ? and password = ?",[email,hash.digest('hex')],(error,result,fields)=>{
+    connection.query("SELECT username FROM users WHERE email = ? and password = ?",[email,hash.digest('hex')],(error,result,fields)=>{
       if(error) throw error;
       if (result && result.length > 0) {
         req.session.loggedin = true;
-        var tem = email.split('@');
-        req.session.username = tem[0];
-        res.redirect('/home?user='+ tem[0]);
+        req.session.username = result[0].username;
+        res.redirect('/home?user='+ result[0].username);
       } else {
         res.redirect('/?error=auth');
       }
@@ -251,9 +250,17 @@ app.post('/createRoom',(req,res)=>{
   let roomPassword = req.body.roomPassword;
   let username = req.session.username;
   if(roomNames.includes(roomName) || webinarNames.includes(roomName)){
-    console.log("Error 1");
-    res.redirect("/home?user=" + username);
-    res.end();
+
+    if(!req.session.loggedin || username === undefined){
+      console.log("Error 1");
+      res.redirect("/?error=timeout");
+      res.end();
+    }else{
+      console.log("Error 10");
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
+
   }else if(req.session.loggedin && username !== undefined){
     if(roomPassword === "" || roomPassword === undefined){
       console.log("previo sentencia SQL");
@@ -313,8 +320,13 @@ app.post('/joinRoom',(req,res)=>{
   let username = req.session.username;
   if(!roomNames.includes(roomName)){
     console.log("Error 1");
-    res.redirect("/home?user=" + username);
-    res.end();
+    if(!req.session.loggedin || username === undefined){
+      res.redirect("/?error=timeout");
+      res.end();
+    }else{
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
   }else if(req.session.loggedin && username !== undefined){
     console.log("Error 2");
     connection.query("SELECT * FROM rooms WHERE name = ? ",[roomName],(error,result,fields)=>{
@@ -365,19 +377,29 @@ app.post('/createWebinar',(req,res)=>{
   let roomPassword = req.body.roomPassword;
   let username = req.session.username;
   if(webinarNames.includes(roomName) || roomNames.includes(roomName)){
-    res.redirect("/home?user=" + username);
-    res.end();
+    if(!req.session.loggedin || username === undefined){
+      console.log("Error 1");
+      res.redirect("/?error=timeout");
+      res.end();
+    }else{
+      console.log("Error 2");
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
   }else if(req.session.loggedin && username !== undefined){
     if(roomPassword === "" || roomName === undefined){
       connection.query("INSERT INTO rooms (name,type) values (?,?)",[roomName,'webinar'],(error,result,fields)=>{
         if(error) {
+          console.log("Error 3");
           res.redirect("/home?user=" + username);
           res.end();
         }else if (result) {
+          console.log("Error 4");
           webinarNames.push(roomName);
           res.redirect('/webinar?status=create&room='+ roomName +'&user=' + username);
           res.end();
         } else {
+          console.log("Error 5");
           res.redirect("/home?user=" + username);
           res.end();
         }
@@ -388,23 +410,28 @@ app.post('/createWebinar',(req,res)=>{
       hash.update(roomPassword);
       connection.query("INSERT INTO rooms (name,type,password) values (?,?,?)",[roomName,'webinar',hash.digest('hex')],(error,result,fields)=>{
         if(error) {
+          console.log("Error 6");
           res.redirect("/home?user=" + username);
           res.end();
         }else if (result) {
+          console.log("Error 7");
           webinarNames.push(roomName);
           res.redirect('/room?status=create&room='+ roomName +'&user=' + username);
           res.end();
         } else {
+          console.log("Error 8");
           res.redirect("/home?user=" + username);
           res.end();
         }
       });
     }else{
+      console.log("Error 9");
       res.redirect("/home?user=" + username);
       res.end();
     }
 
   }else{
+    console.log("Error 10");
     res.redirect("/?error=timeout");
     res.end();
   }
@@ -415,8 +442,13 @@ app.post('/joinWebinar',(req,res)=>{
   let roomPassword = req.body.roomPassword;
   let username = req.session.username;
   if(!webinarNames.includes(req.body.roomName)){
-    res.redirect("/home?user=" + req.session.username);
-    res.end();
+    if(!req.session.loggedin || username === undefined){
+      res.redirect("/?error=timeout");
+      res.end();
+    }else{
+      res.redirect("/home?user=" + username);
+      res.end();
+    }
   }else if(req.session.loggedin && req.session.username !== undefined){
     connection.query("SELECT * FROM rooms WHERE name = ? ",[roomName],(error,result,fields)=>{
       console.log("Error 3");
@@ -510,12 +542,18 @@ app.use((req, res, next) => {
 });
 
 cleanExampleRooms(() => {
-  getOrCreateRoom(defaultRoomName, undefined, undefined, (roomId) => {
-    defaultRoom = roomId;
-    app.listen(3001);
-    const server = https.createServer(options, app);
-    console.log('BasicExample started');
-    server.listen(3004);
+
+  app.listen(3001);
+  const server = https.createServer(options, app);
+  console.log('BasicExample started');
+  server.listen(3004);
+  connection.query("TRUNCATE TABLE rooms",(error,result,fields)=>{
+    if(error) throw error;
+    if (result) {
+      console.log("TABLAS BORRADAS");
+    } else {
+      console.log("TABLAS NO BORRADAS");
+    }
   });
 
   setInterval(function(){

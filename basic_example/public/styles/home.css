@@ -1,4 +1,10 @@
 
+.application-title{
+font-size: 65px;
+}
+.space{
+    height: 10%;
+}
 .button-select {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
@@ -7,14 +13,13 @@
     margin-top: 18px;
 }
 .no-room{
-    background-color: #78e08f;
+
 }
 .existing-room{
-    background-color: crimson;
+
 }
 .webinar-selected{
     background-color: #cccccc;
-    background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
     height: 150px;
     border-top-left-radius: 0.4rem;
     border-top-right-radius: 0.4rem;
@@ -28,21 +33,9 @@
 .head{
     height: 100px;
 }
-.test{
-    color: #ffffff;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    background-color: #006dcc;
-    *background-color: #0044cc;
-    background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0044cc));
-    background-image: -webkit-linear-gradient(top, #0088cc, #0044cc);
-    background-image: -o-linear-gradient(top, #0088cc, #0044cc);
-    background-image: linear-gradient(to bottom, #0088cc, #0044cc);
-    background-repeat: repeat-x;
-    border-color: #0044cc #0044cc #002a80;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0044cc', GradientType=0);
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+.form{
+    max-width: 600px;
+    min-width: 400px;
 }
 .x{
     font-size: 29px;

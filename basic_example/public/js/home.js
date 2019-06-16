@@ -70,6 +70,20 @@ function joinWebinar(){
 setInterval(() => {
     if(document.getElementById( 'roomName').value.length > 0){
         checkRooms();
+    }else {
+
+        document.getElementById('roomName').classList.remove('no-room');
+        document.getElementById('roomName').classList.remove('existing-room');
+        document.getElementById('roomAvailable').setAttribute("hidden", "hidden");
+        document.getElementById('roomNotAvailable').setAttribute('hidden', 'hidden');
+
+        if (document.getElementById("homeForm").classList.contains("webinar-selected")) {
+            document.getElementById('joinWebinarButton').removeAttribute("hidden");
+            document.getElementById('createWebinarButton').removeAttribute('hidden');
+        } else if (document.getElementById("homeForm").classList.contains("room-selected")) {
+            document.getElementById('createRoomButton').removeAttribute('hidden');
+            document.getElementById('joinRoomButton').removeAttribute("hidden");
+        }
     }
 
 }, 1000);
@@ -82,21 +96,49 @@ function checkRooms(){
             const res = this.responseText;
             let rooms = JSON.parse(res);
             rooms.forEach(function (room) {
-                if (document.getElementById( 'roomName').value.length > 0 && document.getElementById('roomName').value === room.name){
+                console.log("entrado");
+                if (document.getElementById( 'roomName').value !== "" && document.getElementById('roomName').value === room.name){
                     document.getElementById('roomName').classList.remove('no-room');
                     document.getElementById('roomName').classList.add('existing-room');
                     document.getElementById('roomAvailable').setAttribute("hidden", "hidden");
                     document.getElementById('roomNotAvailable').removeAttribute('hidden');
-                }else if(document.getElementById( 'roomName').value.length > 0){
+
+                    if (document.getElementById("homeForm").classList.contains("webinar-selected")){
+                        document.getElementById('joinWebinarButton').removeAttribute('hidden');
+                        document.getElementById('createWebinarButton').setAttribute("hidden", "hidden");
+                    }else if(document.getElementById("homeForm").classList.contains("room-selected")){
+                        document.getElementById('joinRoomButton').removeAttribute('hidden');
+                        document.getElementById('createRoomButton').setAttribute("hidden", "hidden");
+                    }
+
+                }else if(document.getElementById( 'roomName').value !== ""){
                     document.getElementById('roomName').classList.add('no-room');
                     document.getElementById('roomName').classList.remove('existing-room');
                     document.getElementById('roomNotAvailable').setAttribute("hidden", "hidden");
                     document.getElementById('roomAvailable').removeAttribute('hidden');
+
+                    if (document.getElementById("homeForm").classList.contains("webinar-selected")){
+                        document.getElementById('joinWebinarButton').setAttribute("hidden", "hidden");
+                        document.getElementById('createWebinarButton').removeAttribute('hidden');
+                    }else if(document.getElementById("homeForm").classList.contains("room-selected")){
+                        document.getElementById('createRoomButton').removeAttribute('hidden');
+                        document.getElementById('joinRoomButton').setAttribute("hidden", "hidden");
+                    }
+
                 }else{
                     document.getElementById('roomName').classList.remove('no-room');
                     document.getElementById('roomName').classList.remove('existing-room');
                     document.getElementById('roomAvailable').setAttribute("hidden", "hidden");
                     document.getElementById('roomNotAvailable').setAttribute('hidden','hidden');
+
+                    if (document.getElementById("homeForm").classList.contains("webinar-selected")){
+                        document.getElementById('joinWebinarButton').removeAttribute("hidden");
+                        document.getElementById('createWebinarButton').removeAttribute('hidden');
+                    }else if(document.getElementById("homeForm").classList.contains("room-selected")){
+                        document.getElementById('createRoomButton').removeAttribute('hidden');
+                        document.getElementById('joinRoomButton').removeAttribute("hidden");
+                    }
+
                 }
             });
         }
@@ -121,6 +163,8 @@ function selectRoom(){
     document.getElementById("selectRoomButton").classList.add("btn-primary");
     document.getElementById("selectWebinarButton").classList.remove("btn-primary");
     document.getElementById("selectRoomButton").classList.remove("btn-secondary");
+
+    document.getElementById("roomLabel").innerText="Room name";
 }
 function selectWebinar(){
     document.getElementById('createRoomButton').setAttribute("disabled", "disabled");
@@ -139,11 +183,20 @@ function selectWebinar(){
     document.getElementById("selectRoomButton").classList.add("btn-secondary");
     document.getElementById("selectWebinarButton").classList.remove("btn-secondary");
     document.getElementById("selectRoomButton").classList.remove("btn-primary");
+
+    document.getElementById("roomLabel").innerText="Webinar name";
 }
 window.onload = () => {
     const urlString = window.location.href;
     const url = new URL(urlString);
-    document.getElementById('username').innerHTML = 'Bienvenido! ' + url.searchParams.get('user');
+    const error = url.searchParams.get('error');
+    document.getElementById('username').innerHTML = 'Welcome ' + url.searchParams.get('user') + '! ' ;
+
+    if(error === 'password'){
+        document.getElementById('password-error').removeAttribute('hidden');
+    }
+
+
 
 
 };
