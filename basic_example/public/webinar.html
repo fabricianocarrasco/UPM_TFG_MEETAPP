@@ -29,7 +29,7 @@
     <footer class="footer">
         <div class="chat left_side">
           <div class="card">
-            <div class="card-header msg_head">
+            <div class="card-header msg_head" onclick="toggleChat()">
               <div class="d-flex bd-highlight">
                 <div class="img_cont">
                   <img src="http://www.etsit.upm.es/fileadmin/documentos/laescuela/la_escuela/galerias_fotograficas/Servicios/generales/logos/ESCUDO_PROFESION/ESCUDO_PROFESION.png" class="rounded-circle user_img" alt="">
@@ -42,7 +42,7 @@
             </div>
             <div id="chatMessages" class="card-body msg_card_body">
             </div>
-            <div class="card-footer">
+            <div id="cardFooter" class="card-footer">
               <div class="input-group">
                 <textarea id="inputChat" name="" class="form-control type_msg" placeholder="Type your message..."></textarea>
                 <div class="input-group-append">

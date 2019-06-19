@@ -186,16 +186,18 @@ function createRoom(roomName){
       //si se acepta la cámara se inicia la reproduccion de video
       localStream.addEventListener('access-accepted', function(event){
         //se configura el container para almacenar los stream
-        document.getElementById('videoLocal').setAttribute('style', 'width: 360px; height: 240px; float:left');
+        document.getElementById('videoLocal').setAttribute('style', 'width: 100%; float:left');
         //se publica el video en la sala
         room.publish(localStream);
 
         console.log(`Create: show localStream +-------------------+`);
         const div = document.createElement('div');
-        div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
+        div.setAttribute('style', 'width: 100%; float:left;');
         div.setAttribute('id', `test${localStream.getID()}`);
         document.getElementById('videoLocal').appendChild(div);
         localStream.show(`test${localStream.getID()}`);
+
+        document.getElementById("player_local").style.height = "300px";
 
       });
       //en caso de no aceptar no se hace nada
@@ -231,7 +233,14 @@ function createRoom(roomName){
         if (document.getElementById(`test${stream.getID()}`) !== undefined) {
 
           const element = document.getElementById(`test${stream.getID()}`);
-          document.getElementById('videoContainer').removeChild(element);
+          if(document.getElementById("videoContainer").contains(element)){
+            document.getElementById('videoContainer').removeChild(element);
+          }else if(document.getElementById('videoFocused').contains(element)){
+            document.getElementById('videoFocused').removeChild(element);
+            document.getElementById("videoFocused").appendChild(document.getElementById("videoContainer"));
+            document.getElementById("videoFooter").childNodes = null;
+            document.getElementById("videoContainer").style.maxHeight = "100%";
+          }
 
           console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
@@ -245,7 +254,8 @@ function createRoom(roomName){
 
         console.log(`Create: subscribed to ${subscribedEvent.stream.getID()}`);
         const div = document.createElement('div');
-        div.setAttribute('style', 'width: 320px; height: 240px; float:left;');
+        div.setAttribute('class', 'video_stream');
+        div.setAttribute("onclick",`centerFocus(test${subscribedEvent.stream.getID()})`);
         div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
         document.getElementById('videoContainer').appendChild(div);
         subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
@@ -263,7 +273,8 @@ function createRoom(roomName){
         subscribedEvent.stream.addEventListener('stream-data', function(event){
           //Creamos un elemento div para que se muestre el texto del chat
           const div1 = document.createElement('div');
-          div1.setAttribute('id', `chat${event.msg.timestamp}`);
+          const date = new Date(event.msg.timestamp);
+          div1.setAttribute('id', `chat${date.getTime()}`);
           div1.setAttribute('class', "d-flex justify-content-first mb-4");
           const div2 =document.createElement('div');
           div2.setAttribute('class',"img_cont_msg");
@@ -273,7 +284,7 @@ function createRoom(roomName){
           div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
           const span = document.createElement('span');
           span.setAttribute('class','msg_time');
-          span.innerText= `${event.msg.timestamp}`;
+          span.innerText= `${date.getHours()}:${date.getMinutes()}`;
           div3.appendChild(span);
           div1.appendChild(div3);
 
@@ -324,16 +335,18 @@ function joinRoom(roomName){
         //si se acepta la cámara se inicia la reproduccion de video
         localStream.addEventListener('access-accepted', function(event){
           //se configura el container para almacenar los stream
-          document.getElementById('videoLocal').setAttribute('style', 'width: 320; height: 240; float:left');
+          document.getElementById('videoLocal').setAttribute('style', 'width: 100%; float:left');
           //se publica el video en la sala
           room.publish(localStream);
 
           console.log(`Join: show localStream +-------------------+`);
           const div = document.createElement('div');
-          div.setAttribute('style', 'width: 320px; height: 240px;float:left;');
+          div.setAttribute('style', 'width: 100%;float:left;');
           div.setAttribute('id', `test${localStream.getID()}`);
           document.getElementById('videoLocal').appendChild(div);
           localStream.show(`test${localStream.getID()}`);
+
+          document.getElementById("player_local").style.height = "300px";
 
           //se conecta y muestra los streams que ya estén en la sala
           room.remoteStreams.forEach((stream)=>{
@@ -374,8 +387,14 @@ function joinRoom(roomName){
           if (document.getElementById(`test${stream.getID()}`) !== undefined) {
 
             const element = document.getElementById(`test${stream.getID()}`);
-            document.getElementById('videoContainer').removeChild(element);
-
+            if(document.getElementById("videoContainer").contains(element)){
+              document.getElementById('videoContainer').removeChild(element);
+            }else if(document.getElementById('videoFocused').contains(element)){
+              document.getElementById('videoFocused').removeChild(element);
+              document.getElementById("videoFocused").appendChild(document.getElementById("videoContainer"));
+              document.getElementById("videoFooter").childNodes = null;
+              document.getElementById("videoContainer").style.maxHeight = "100%";
+            }
             console.log(`Create: stream ${addedEvent.stream.getID()} deleted +-----------------+`);
 
           }
@@ -388,7 +407,8 @@ function joinRoom(roomName){
 
           console.log(`Join: subscribed to ${subscribedEvent.stream.getID()}`);
           const div = document.createElement('div');
-          div.setAttribute('style', 'width: 320px; height: 240px; float:left;');
+          div.setAttribute('class', 'video_stream');
+          div.setAttribute("onclick",`centerFocus(test${subscribedEvent.stream.getID()})`);
           div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
           document.getElementById('videoContainer').appendChild(div);
           subscribedEvent.stream.show(`test${subscribedEvent.stream.getID()}`);
@@ -406,7 +426,8 @@ function joinRoom(roomName){
           subscribedEvent.stream.addEventListener('stream-data', function(event){
             //Creamos un elemento div para que se muestre el texto del chat
             const div1 = document.createElement('div');
-            div1.setAttribute('id', `chat${event.msg.timestamp}`);
+            const date = new Date(event.msg.timestamp);
+            div1.setAttribute('id', `chat${date.getTime()}`);
             div1.setAttribute('class', "d-flex justify-content-first mb-4");
             const div2 =document.createElement('div');
             div2.setAttribute('class',"img_cont_msg");
@@ -416,7 +437,7 @@ function joinRoom(roomName){
             div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
             const span = document.createElement('span');
             span.setAttribute('class','msg_time');
-            span.innerText= `${event.msg.timestamp}`;
+            span.innerText= `${date.getHours()}:${date.getMinutes()}`;
             div3.appendChild(span);
             div1.appendChild(div3);
 
@@ -441,15 +462,15 @@ function sendMessage(){
     if(document.getElementById('inputChat').value !== ""){
         const div = document.createElement('div');
 
-        const date = Date.now();
-        div.setAttribute('id', `chat${date}`);
+        const date = new Date();
+        div.setAttribute('id', `chat${date.getTime()}`);
         div.setAttribute('class', "d-flex justify-content-end mb-4");
         const div3 = document.createElement('div');
         div3.setAttribute('class','msg_container_send');
         div3.innerHTML = safe_tags_replace(document.getElementById('inputChat').value);
         const span = document.createElement('span');
         span.setAttribute('class','msg_time_send');
-        span.innerText= `${date}`;
+        span.innerText= `${date.getHours()}:${date.getMinutes()}`;
         div3.appendChild(span);
         const div2 =document.createElement('div');
         div2.setAttribute('class',"img_cont_msg");
@@ -479,6 +500,52 @@ function safe_tags_replace(str) {
     return str.replace(/[&<>]/g, replaceTag);
 }
 
+function toggleChat(){
+  if (document.getElementById("chatMessages").hasAttribute("hidden")) {
+    document.getElementById("cardFooter").removeAttribute("hidden");
+    document.getElementById('chatMessages').removeAttribute('hidden');
+  } else{
+    document.getElementById("cardFooter").setAttribute("hidden","hidden");
+    document.getElementById('chatMessages').setAttribute('hidden',"hidden");
+  }
+}
+
+function centerFocus(videoDiv){
+  console.log("Entra a la funcion");
+  if(videoDiv.classList.contains("stream_focused")){
+    videoDiv.classList.remove("stream_focused");
+    document.getElementById("videoContainer").appendChild(videoDiv);
+    document.getElementById("videoFocused").appendChild(document.getElementById("videoContainer"));
+    document.getElementById("videoFooter").childNodes = null;
+    document.getElementById("videoContainer").style.maxHeight = "100%";
+    videoDiv.style.height = null;
+    videoDiv.style.width = null;
+  }else{
+    const videos = document.getElementById("videoFocused").childNodes;
+    videos.forEach(function (video) {
+      if (video.classList !== undefined){
+        video.classList.remove("stream_focused");
+        if(document.getElementById("videoFooter").childElementCount >0){
+          document.getElementById("videoContainer").appendChild(video);
+        }
+      }
+    });
+    videoDiv.classList.add("stream_focused");
+    document.getElementById("videoFocused").childNodes = null;
+    document.getElementById("videoFooter").appendChild(document.getElementById("videoContainer"));
+    document.getElementById("videoFocused").appendChild(videoDiv);
+    document.getElementById("videoContainer").style.maxHeight = "245px";
+    console.log(document.getElementById("videoContainer").childElementCount);
+    if(document.getElementById("videoContainer").childElementCount === 0){
+      videoDiv.style.height = "100%";
+      videoDiv.style.width = "calc((100vh) / 0.75)";
+    }else{
+      videoDiv.style.height = null;
+      videoDiv.style.width = null;
+    }
+  }
+
+}
 window.onload = () => {
     const urlString = window.location.href;
     const url = new URL(urlString);

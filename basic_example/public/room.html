@@ -17,20 +17,23 @@
   </head>
 
   <body>
-  <div class="container-fluid h-100">
+  <div class="container-fluid h-100" style="overflow: hidden">
     <header class="header" style="z-index: 1">
       <h1  id='roomName'> </h1>
     </header>
-    <div class="flex-row h-100">
-      <div class="video_local col-5 h-100" id="videoLocal"></div>
-      <div class="justify-content-around h-100">
-        <div class="video_room" id="videoContainer"></div>
+    <div class="row h-100" style="overflow: hidden">
+      <div class="video_local col-5">
+        <div class="row" id="videoLocal"></div>
+      </div>
+      <div class="col video_focused" style="overflow: hidden" id="videoFocused">
+        <div class="row video_room" id="videoContainer" style="overflow: auto">
+        </div>
       </div>
     </div>
-    <footer class="footer">
-      <div class="chat left_side">
+    <footer class="row footer" style="overflow: hidden">
+      <div class="col chat" >
         <div class="card">
-          <div class="card-header msg_head">
+          <div class="card-header msg_head" onclick="toggleChat()">
             <div class="d-flex bd-highlight">
               <div class="img_cont">
                 <img src="http://www.etsit.upm.es/fileadmin/documentos/laescuela/la_escuela/galerias_fotograficas/Servicios/generales/logos/ESCUDO_PROFESION/ESCUDO_PROFESION.png" class="rounded-circle user_img" alt="">
@@ -43,7 +46,7 @@
           </div>
           <div id="chatMessages" class="card-body msg_card_body">
           </div>
-          <div class="card-footer">
+          <div id="cardFooter" class="card-footer">
             <div class="input-group">
               <textarea id="inputChat" name="" class="form-control type_msg" placeholder="Type your message..."></textarea>
               <div class="input-group-append">
@@ -53,7 +56,9 @@
           </div>
         </div>
       </div>
+      <div class="col" id="videoFooter" style="overflow: hidden; align-self: flex-end">
 
+      </div>
     </footer>
   </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

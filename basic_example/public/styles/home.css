@@ -12,12 +12,24 @@ font-size: 65px;
 .button-link {
     margin-top: 18px;
 }
-.no-room{
+
+.form-control:focus{
+    box-shadow: none;
+    border-width: medium;
+    border-color: #007bff;
 
 }
-.existing-room{
 
+.no-room, .no-room:focus{
+    border-color: green; !important;
+    border-width: medium; !important;
 }
+.existing-room, .existing-room:focus{
+    border-color: crimson; !important;
+    border-width: medium; !important;
+}
+
+
 .webinar-selected{
     background-color: #cccccc;
     height: 150px;

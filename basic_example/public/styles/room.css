@@ -1,4 +1,7 @@
-
+.row{
+    margin-left: 0;
+    margin-right: 0;
+}
 .header{
     color: white;
     /*font: bold 24px/45px Helvetica, Sans-Serif;*/
@@ -13,18 +16,46 @@
 .video_local{
     margin-top: 76px;
     padding: 0;
-}
-.video_room{
-
-}
-.left_side{
-    width: 40%;
-    height: 100%;
     max-width: 400px;
-    align-self: flex-start;
-    align-items: flex-start;
+}
+.chat{
+    width: 40%;
+    max-width: 400px;
+    padding: 0;
     margin-bottom: 0;
 }
+.video_focused{
+    height: 100%;
+    max-height: 100%;
+}
+.video_room{
+    height: 100%;
+    max-height: 100%;
+    align-self: flex-end;
+    bottom: -5px;
+}
+.video_stream{
+    width: 320px;
+    height: 240px;
+    float:left;
+    margin:0 5px 5px 5px;
+
+}
+.stream_focused {
+    /*box-shadow: 0 10px 0 0 rgba(0,0,0,0.35);*/
+    border-style: dashed;
+    border-width: 10px;
+    border-color: #495057;
+
+    display: inline-block;
+    /* max-height: calc(100% - 245px); */
+    height: calc(100% - 270px);
+}
+
+.stream_focused {
+    width: calc((100vh - 270px) / 0.75);
+}
+
 .footer {
     position: fixed;
     left: 0;

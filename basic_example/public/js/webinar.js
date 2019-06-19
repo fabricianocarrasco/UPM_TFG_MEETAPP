@@ -233,23 +233,24 @@ function createWebinar(webinarName){
                         //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
                         subscribedEvent.stream.addEventListener('stream-data', function(event){
                             //Creamos un elemento div para que se muestre el texto del chat
-                            const div = document.createElement('div');
-                            div.setAttribute('id', `chat${event.msg.timestamp}`);
-                            div.setAttribute('class', "d-flex justify-content-first mb-4");
+                            const div1 = document.createElement('div');
+                            const date = new Date(event.msg.timestamp);
+                            div1.setAttribute('id', `chat${date.getTime()}`);
+                            div1.setAttribute('class', "d-flex justify-content-first mb-4");
                             const div2 =document.createElement('div');
                             div2.setAttribute('class',"img_cont_msg");
-                            div.appendChild(div2);
+                            div1.appendChild(div2);
                             const div3 = document.createElement('div');
                             div3.setAttribute('class','msg_container');
                             div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
                             const span = document.createElement('span');
                             span.setAttribute('class','msg_time');
-                            span.innerText= `${event.msg.timestamp}`;
+                            span.innerText= `${date.getHours()}:${date.getMinutes()}`;
                             div3.appendChild(span);
-                            div.appendChild(div3);
+                            div1.appendChild(div3);
 
-                            document.getElementById('chatMessages').appendChild(div);
-                            lastMessage = div.id;
+                            document.getElementById('chatMessages').appendChild(div1);
+                            lastMessage = div1.id;
                             document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
                             console.log("Data from: " + event.stream.getAttributes().name);
@@ -384,29 +385,31 @@ function joinWebinar(webinarName){
                     //Se añade un evento de escucha para cada stream que ya estaba conectado a la sala para cuando envíe un mensaje
                     subscribedEvent.stream.addEventListener('stream-data', function(event){
                         //Creamos un elemento div para que se muestre el texto del chat
-                        const div = document.createElement('div');
-                        div.setAttribute('id', `chat${event.msg.timestamp}`);
-                        div.setAttribute('class', "d-flex justify-content-first mb-4");
+                        const div1 = document.createElement('div');
+                        const date = new Date(event.msg.timestamp);
+                        div1.setAttribute('id', `chat${date.getTime()}`);
+                        div1.setAttribute('class', "d-flex justify-content-first mb-4");
                         const div2 =document.createElement('div');
                         div2.setAttribute('class',"img_cont_msg");
-                        div.appendChild(div2);
+                        div1.appendChild(div2);
                         const div3 = document.createElement('div');
                         div3.setAttribute('class','msg_container');
                         div3.innerHTML = "<b>" + safe_tags_replace(event.stream.getAttributes().name) + " </b>: " + safe_tags_replace(event.msg.text);
                         const span = document.createElement('span');
                         span.setAttribute('class','msg_time');
-                        span.innerText= `${event.msg.timestamp}`;
+                        span.innerText= `${date.getHours()}:${date.getMinutes()}`;
                         div3.appendChild(span);
-                        div.appendChild(div3);
+                        div1.appendChild(div3);
 
-                        document.getElementById('chatMessages').appendChild(div);
-                        lastMessage = div.id;
+                        document.getElementById('chatMessages').appendChild(div1);
+                        lastMessage = div1.id;
                         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
                         console.log("Data from: " + event.stream.getAttributes().name);
                     });
 
                 });
+
                 room.addEventListener('stream-failed', () => {
                     console.log('Stream Failed, act accordingly');
                 });
@@ -468,6 +471,16 @@ function replaceTag(tag) {
 
 function safe_tags_replace(str) {
     return str.replace(/[&<>]/g, replaceTag);
+}
+
+function toggleChat(){
+    if (document.getElementById("chatMessages").hasAttribute("hidden")) {
+        document.getElementById("cardFooter").removeAttribute("hidden");
+        document.getElementById('chatMessages').removeAttribute('hidden');
+    } else{
+        document.getElementById("cardFooter").setAttribute("hidden","hidden");
+        document.getElementById('chatMessages').setAttribute('hidden',"hidden");
+    }
 }
 
 window.onload = () => {
