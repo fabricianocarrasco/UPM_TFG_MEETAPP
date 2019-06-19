@@ -426,37 +426,27 @@ function sendMessage(){
     if(document.getElementById('inputChat').value !== ""){
         const div = document.createElement('div');
 
-        //div.innerHTML = document.getElementById('inputChat').value;
-        const date = Date.now();
-        div.setAttribute('id', `chat${date}`);
+        const date = new Date();
+        div.setAttribute('id', `chat${date.getTime()}`);
         div.setAttribute('class', "d-flex justify-content-end mb-4");
         const div3 = document.createElement('div');
         div3.setAttribute('class','msg_container_send');
         div3.innerHTML = safe_tags_replace(document.getElementById('inputChat').value);
         const span = document.createElement('span');
         span.setAttribute('class','msg_time_send');
-        span.innerText= `${date}`;
+        span.innerText= `${date.getHours()}:${date.getMinutes()}`;
         div3.appendChild(span);
         const div2 =document.createElement('div');
         div2.setAttribute('class',"img_cont_msg");
         div.appendChild(div3);
         div.appendChild(div2);
 
-
-
-/*
-        if(lastMessage){
-            document.getElementById('chatMessages').insertBefore(div,document.getElementById(lastMessage));
-        }else{
-            document.getElementById('chatMessages').appendChild(div);
-        }
-*/
         document.getElementById('chatMessages').appendChild(div);
-        //lastMessage = div.id;
+
         const msg = document.getElementById('inputChat').value;
 
         localStream.sendData({text:`${msg}`, timestamp:`${date}`});
-        document.getElementById('inputChat').value ="";
+        document.getElementById('inputChat').value = "";
         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
     }
 }

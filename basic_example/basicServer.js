@@ -20,7 +20,7 @@ var path = require('path');
 var connection = mysql.createConnection({
     host:'localhost',
     user:'root',
-    password:'licodearaceli',
+    password:'licodemeetapp',
     database:'mydb'
 });
 
@@ -228,6 +228,7 @@ app.post('/auth',(req,res)=>{
       if (result && result.length > 0) {
         req.session.loggedin = true;
         req.session.username = result[0].username;
+        req.session.email = email;
         res.redirect('/home?user='+ result[0].username);
       } else {
         res.redirect('/?error=auth');
@@ -249,6 +250,7 @@ app.post('/createRoom',(req,res)=>{
   let roomName = req.body.roomName;
   let roomPassword = req.body.roomPassword;
   let username = req.session.username;
+  let email = req.session.email;
   if(roomNames.includes(roomName) || webinarNames.includes(roomName)){
 
     if(!req.session.loggedin || username === undefined){
@@ -264,7 +266,7 @@ app.post('/createRoom',(req,res)=>{
   }else if(req.session.loggedin && username !== undefined){
     if(roomPassword === "" || roomPassword === undefined){
       console.log("previo sentencia SQL");
-      connection.query("INSERT INTO rooms (name,type) values (?,?)",[roomName,'room'],(error,result,fields)=>{
+      connection.query("INSERT INTO rooms (name,type,creator) values (?,?,?)",[roomName,'room',email],(error,result,fields)=>{
         if(error) {
           console.log("Error 2");
           res.redirect("/home?user=" + username);
@@ -284,7 +286,7 @@ app.post('/createRoom',(req,res)=>{
     }else if(roomPassword !== "" && roomPassword){
       const hash = crypto.createHash('sha256');
       hash.update(roomPassword);
-      connection.query("INSERT INTO rooms (name,type,password) values (?,?,?)",[roomName,'room',hash.digest('hex')],(error,result,fields)=>{
+      connection.query("INSERT INTO rooms (name,type,password,creator) values (?,?,?,?)",[roomName,'room',hash.digest('hex'),email],(error,result,fields)=>{
         if(error) {
           console.log("Error 5");
           res.redirect("/home?user=" + username);
@@ -376,6 +378,7 @@ app.post('/createWebinar',(req,res)=>{
   let roomName = req.body.roomName;
   let roomPassword = req.body.roomPassword;
   let username = req.session.username;
+  let email = req.session.email;
   if(webinarNames.includes(roomName) || roomNames.includes(roomName)){
     if(!req.session.loggedin || username === undefined){
       console.log("Error 1");
@@ -388,7 +391,7 @@ app.post('/createWebinar',(req,res)=>{
     }
   }else if(req.session.loggedin && username !== undefined){
     if(roomPassword === "" || roomName === undefined){
-      connection.query("INSERT INTO rooms (name,type) values (?,?)",[roomName,'webinar'],(error,result,fields)=>{
+      connection.query("INSERT INTO rooms (name,type,creator) values (?,?,?)",[roomName,'webinar',email],(error,result,fields)=>{
         if(error) {
           console.log("Error 3");
           res.redirect("/home?user=" + username);
@@ -408,7 +411,7 @@ app.post('/createWebinar',(req,res)=>{
     }else if(roomPassword !== "" && roomPassword){
       const hash = crypto.createHash('sha256');
       hash.update(roomPassword);
-      connection.query("INSERT INTO rooms (name,type,password) values (?,?,?)",[roomName,'webinar',hash.digest('hex')],(error,result,fields)=>{
+      connection.query("INSERT INTO rooms (name,type,password,creator) values (?,?,?,?)",[roomName,'webinar',hash.digest('hex'),email],(error,result,fields)=>{
         if(error) {
           console.log("Error 6");
           res.redirect("/home?user=" + username);

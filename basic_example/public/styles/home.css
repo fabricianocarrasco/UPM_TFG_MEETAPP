@@ -1,9 +1,10 @@
 
 .application-title{
 font-size: 65px;
+    align-self: flex-end;
 }
 .space{
-    height: 10%;
+    height: 50px;
 }
 .button-select {
     border-top-left-radius: 0;
