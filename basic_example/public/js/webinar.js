@@ -314,7 +314,8 @@ function joinWebinar(webinarName){
                 nUsersInRoom();
 
                 //se configura el container para almacenar los stream
-                document.getElementById('videoContainer');
+                document.getElementById('videoContainer').setAttribute('style', 'width: 100%; height: 100%; ');
+
                 room.remoteStreams.forEach((stream)=> {
                     //se suscribe a todos los streams que estan en la sala
                     subscribeToStream(stream, localStream, room);
@@ -366,7 +367,7 @@ function joinWebinar(webinarName){
                     if (subscribedEvent.stream.hasVideo()) {
 
                         const div = document.createElement('div');
-                        div.setAttribute('style', 'width: 320px; height: 240px; float:center;');
+                        div.setAttribute('style', 'width: 100%; height: 100%; float:center');
                         div.setAttribute('id', `test${subscribedEvent.stream.getID()}`);
 
                         document.getElementById('videoContainer').appendChild(div);
