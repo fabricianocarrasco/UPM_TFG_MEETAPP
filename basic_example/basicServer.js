@@ -419,7 +419,7 @@ app.post('/createWebinar',(req,res)=>{
         }else if (result) {
           console.log("Error 7");
           webinarNames.push(roomName);
-          res.redirect('/room?status=create&room='+ roomName +'&user=' + username);
+          res.redirect('/webinar?status=create&room='+ roomName +'&user=' + username);
           res.end();
         } else {
           console.log("Error 8");
