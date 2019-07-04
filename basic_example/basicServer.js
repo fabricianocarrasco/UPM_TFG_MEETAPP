@@ -390,7 +390,7 @@ app.post('/createWebinar',(req,res)=>{
       res.end();
     }
   }else if(req.session.loggedin && username !== undefined){
-    if(roomPassword === "" || roomName === undefined){
+    if(roomPassword === "" || roomPassword === undefined){
       connection.query("INSERT INTO rooms (name,type,creator) values (?,?,?)",[roomName,'webinar',email],(error,result,fields)=>{
         if(error) {
           console.log("Error 3");
